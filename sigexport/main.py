@@ -91,6 +91,7 @@ def copy_attachments(
                             .replace("/", "-")
                             .replace(",", "")
                             .replace(":", "-")
+                            .replace("|", "-")
                         )
                         # account for erroneous backslash in path
                         att_path = str(att["path"]).replace("\\", "/")
