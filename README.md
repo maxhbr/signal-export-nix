@@ -87,9 +87,10 @@ You can also run the Docker image directly, it just requires copy-pasting a much
 First set the appropriate environment variables for your OS:
 ```bash
 # Only enter one of these!
-SIGNAL_INPUT="$HOME/.config/Signal"                     # Linux
-SIGNAL_INPUT="$HOME/Library/Application Support/Signal" # macOS
-SIGNAL_INPUT="$HOME/AppData/Roaming/Signal"             # Powershell
+SIGNAL_INPUT="$HOME/.config/Signal"                             # Linux
+SIGNAL_INPUT="$HOME/snap/signal-desktop/current/.config/Signal" # Snap
+SIGNAL_INPUT="$HOME/Library/Application Support/Signal"         # macOS
+SIGNAL_INPUT="$HOME/AppData/Roaming/Signal"                     # Powershell
 
 # And your output location (must be an absolute path)
 SIGNAL_OUTPUT="$HOME/Downloads/signal-output"
@@ -100,7 +101,8 @@ Then run the below command, which pulls in the environment variables you set abo
 # Note that the --overwrite flag is necessary when running like this
 # careful where you point it!
 docker run --rm \
-  -v "$SIGNAL_INPUT:/Signal" \
+  --net none \
+  -v "$SIGNAL_INPUT:/Signal:ro" \
   -v "$SIGNAL_OUTPUT:/output" \
     carderne/sigexport:latest \
     --overwrite /output \         # this line is obligatory!
