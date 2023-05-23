@@ -481,7 +481,7 @@ def main(
     ),
     verbose: bool = Option(False, "--verbose", "-v"),
     use_docker: bool = Option(
-        False, help="Use Docker container for SQLCipher extraction"
+        True, help="Use Docker container for SQLCipher extraction"
     ),
     docker_image: str = Option(None, help="Docker image to use"),
     print_data: bool = Option(
@@ -519,6 +519,7 @@ def main(
         try:
             from pysqlcipher3 import dbapi2 as _  # type: ignore[import] # noqa
         except Exception:
+            secho("You set 'no-use-docker' but `pysqlcipher3` not installed properly, falling back to Docker")
             use_docker = True
 
     if use_docker:
