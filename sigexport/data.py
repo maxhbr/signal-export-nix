@@ -23,8 +23,7 @@ def fetch_data(
     """Load SQLite data into dicts."""
     contacts: Contacts = {}
     convos: Convos = {}
-    if chats:
-        chats_list = chats.split(",")
+    chats_list = chats.split(",") if chats else []
 
     db_file_decrypted = db_file.parents[0] / "db-decrypt.sqlite"
     if manual:

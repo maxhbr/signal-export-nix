@@ -540,13 +540,8 @@ def main(
         if verbose:
             cmd.append("--verbose")
         try:
-            p = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            p = subprocess.run(cmd, capture_output=True, text=True, check=True, encoding="utf-8")
             docker_logs_1, data_raw, docker_logs_2 = p.stdout.split(DATA_DELIM)
-            data = json.loads(data_raw)
-            if log:
-                secho(docker_logs_1)
-                secho(docker_logs_2)
-            convos, contacts = data["convos"], data["contacts"]
         except FileNotFoundError:
             secho("Error: using Docker method, but is Docker installed?", fg=colors.RED)
             secho("Try running this from the command line:\ndocker run hello-world")
@@ -557,11 +552,18 @@ def main(
         except subprocess.TimeoutExpired:
             secho("Docker process timed out.")
             raise Exit(1)
+        try:
+            data = json.loads(data_raw)
+            if log:
+                secho(docker_logs_1)
+                secho(docker_logs_2)
         except json.JSONDecodeError:
             secho("Unable to decode data from Docker, see logs below:", fg=colors.RED)
             secho(p.stdout)
             secho(p.stderr, fg=colors.RED)
             raise Exit(1)
+        try:
+            convos, contacts = data["convos"], data["contacts"]
         except (KeyError, TypeError):
             secho(
                 "Unable to extract convos and contacts from Docker, see data below",
