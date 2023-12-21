@@ -519,8 +519,8 @@ def main(
         try:
             from pysqlcipher3 import dbapi2 as _  # type: ignore[import] # noqa
         except Exception:
-            secho("You set 'no-use-docker' but `pysqlcipher3` not installed properly, falling back to Docker")
-            use_docker = True
+            secho("You set 'no-use-docker' but `pysqlcipher3` not installed properly")
+            sys.exit(1)
 
     if use_docker:
         if not docker_image:
@@ -530,7 +530,15 @@ def main(
             "Using Docker to extract data, this may take a while the first time!",
             fg=colors.BLUE,
         )
-        cmd = ["docker", "run", "--rm", f"--volume={src}:/Signal", docker_image]
+        cmd = [
+            "docker",
+            "run",
+            "--rm",
+            f"--volume={src}:/Signal",
+            docker_image,
+            "--no-use-docker",
+            "--print-data",
+        ]
         if manual:
             cmd.append("--manual")
         if chats:
@@ -540,7 +548,9 @@ def main(
         if verbose:
             cmd.append("--verbose")
         try:
-            p = subprocess.run(cmd, capture_output=True, text=True, check=True, encoding="utf-8")
+            p = subprocess.run(
+                cmd, capture_output=True, text=True, check=True, encoding="utf-8"
+            )
             docker_logs_1, data_raw, docker_logs_2 = p.stdout.split(DATA_DELIM)
         except FileNotFoundError:
             secho("Error: using Docker method, but is Docker installed?", fg=colors.RED)
