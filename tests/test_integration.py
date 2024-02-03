@@ -133,6 +133,7 @@ def test_integration():
         old=None,
         overwrite=True,
         quote=True,
+        newlines=False,
         paginate=100,
         chats=None,
         html=True,

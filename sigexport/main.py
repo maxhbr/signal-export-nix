@@ -114,7 +114,11 @@ def timestamp_format(ts: float) -> str:
 
 
 def create_markdown(
-    dest: Path, convos: Convos, contacts: Contacts, add_quote: bool = False
+    dest: Path,
+    convos: Convos,
+    contacts: Contacts,
+    add_quote: bool = False,
+    add_newline: bool = False,
 ) -> Iterable[Tuple[Path, str]]:
     """Output each conversation into a simple text file."""
     dest = Path(dest)
@@ -218,11 +222,12 @@ def create_markdown(
             if add_quote:
                 try:
                     quote = msg["quote"]["text"]
-                    quote = f"\n>\n> {quote}\n>\n"
+                    quote = f"\n\n> {quote}\n\n"
                 except (KeyError, TypeError):
                     pass
 
-            yield md_path, f"[{date}] {sender}: {quote}{body}"
+            maybe_newline = "\n" if add_newline else ""
+            yield md_path, f"[{date}] {sender}: {quote}{body}{maybe_newline}"
 
 
 def fix_names(contacts: Contacts) -> Contacts:
@@ -463,10 +468,16 @@ def main(
         False, "--overwrite", "-o", help="Overwrite existing output"
     ),
     quote: bool = Option(True, "--quote/--no-quote", "-q", help="Include quote text"),
+    newlines: bool = Option(
+        False,
+        "--newlines/--no-newlines",
+        "-n",
+        help="Whether to insert blank lines between each message to improve Markdown rendering",
+    ),
     paginate: int = Option(
         100, "--paginate", "-p", help="Messages per page in HTML; set to 0 for infinite"
     ),
-    chats: str = Option(
+    chats: Optional[str] = Option(
         None, help="Comma-separated chat names to include: contact names or group names"
     ),
     html: bool = Option(True, help="Whether to create HTML output"),
@@ -487,7 +498,7 @@ def main(
     print_data: bool = Option(
         False, help="Print extracted DB data and exit (for use by Docker container)"
     ),
-    version: Optional[bool] = Option(None, "--version", callback=version_callback),
+    _: Optional[bool] = Option(None, "--version", callback=version_callback),
 ) -> None:
     """Read the Signal directory and output attachments and chat to DEST directory."""
     global log
@@ -623,7 +634,7 @@ def main(
             secho(f"No file to copy at {att_src}, skipping!", fg=colors.MAGENTA)
 
     secho("Creating markdown files")
-    for md_path, md_text in create_markdown(dest, convos, contacts, quote):
+    for md_path, md_text in create_markdown(dest, convos, contacts, quote, newlines):
         with md_path.open("a", encoding="utf-8") as md_file:
             print(md_text, file=md_file)
     if old:
