@@ -39,7 +39,7 @@ def fetch_data(
             f"DETACH DATABASE plaintext;"
             f'" | sqlcipher {db_file}'
         )
-        os.system(command)
+        os.system(command)  # NoQA: S605
         # use sqlite instead of sqlcipher as DB already decrypted
         db = sqlite3.connect(str(db_file_decrypted))
         c = db.cursor()

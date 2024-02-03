@@ -28,10 +28,10 @@ classifiers = [
 ]
 
 dependencies = [
-    "beautifulsoup4 >= 4.11.1",
-    "emoji >= 1.7.0",
-    "Markdown >= 3.4.1",
-    "typer[all] >= 0.7.0",
+    "beautifulsoup4 ~= 4.11",
+    "emoji ~= 1.7",
+    "Markdown ~= 3.4",
+    "typer[all] ~= 0.7",
 ]
 
 [project.optional-dependencies]
@@ -42,7 +42,7 @@ dev = [
     "pre-commit",
     "pytest",
     "pytest-cov",
-    "ruff",
+    "ruff ~= 0.2",
     "setuptools-scm",
     "twine",
     "types-Markdown",
@@ -74,12 +74,13 @@ line-length = 88
 
 [tool.ruff]
 target-version = "py38"
+exclude = ["tests"]
 
+[tool.ruff.lint]
 select = [
     "F",
     "E",
     "I",
-    "D",
     "U",
     "N",
     "E",
@@ -89,9 +90,8 @@ select = [
     "Q",
     "ANN",
 ]
-src = ["sigexport"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["sigexport"]
 
 [tool.mypy]

@@ -472,7 +472,7 @@ def main(
         False,
         "--newlines/--no-newlines",
         "-n",
-        help="Whether to insert blank lines between each message to improve Markdown rendering",
+        help="Whether to insert blank lines between each message to improve Markdown rendering",  # NoQA: E501
     ),
     paginate: int = Option(
         100, "--paginate", "-p", help="Messages per page in HTML; set to 0 for infinite"
@@ -560,7 +560,11 @@ def main(
             cmd.append("--verbose")
         try:
             p = subprocess.run(
-                cmd, capture_output=True, text=True, check=True, encoding="utf-8"
+                cmd,  # NoQA: S603
+                capture_output=True,
+                text=True,
+                check=True,
+                encoding="utf-8",
             )
             docker_logs_1, data_raw, docker_logs_2 = p.stdout.split(DATA_DELIM)
         except FileNotFoundError:
