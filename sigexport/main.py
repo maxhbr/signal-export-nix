@@ -18,6 +18,7 @@ from typer import Argument, Exit, Option, colors, run, secho
 from sigexport import __version__, templates
 from sigexport.models import Contacts, Convos
 
+
 log = False
 
 DATA_DELIM = "-----DATA-----"
@@ -563,19 +564,20 @@ def main(
                 cmd,  # NoQA: S603
                 capture_output=True,
                 text=True,
-                check=True,
+                check=False,
                 encoding="utf-8",
             )
-            docker_logs_1, data_raw, docker_logs_2 = p.stdout.split(DATA_DELIM)
         except FileNotFoundError:
             secho("Error: using Docker method, but is Docker installed?", fg=colors.RED)
             secho("Try running this from the command line:\ndocker run hello-world")
             raise Exit(1)
-        except subprocess.CalledProcessError as e:
-            secho(f"Docker process failed, see logs below:\n{e}", fg=colors.RED)
-            raise Exit(1)
         except subprocess.TimeoutExpired:
             secho("Docker process timed out.")
+            raise Exit(1)
+        try:
+            docker_logs_1, data_raw, docker_logs_2 = p.stdout.split(DATA_DELIM)
+        except ValueError:
+            secho(f"Docker process failed, see logs below:\n{p.stderr}", fg=colors.RED)
             raise Exit(1)
         try:
             data = json.loads(data_raw)
