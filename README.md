@@ -133,7 +133,6 @@ And _then_ run the Python script, but tell it to use the image you just created:
 sigexport --docker-image yourname/sigexport outputdir/
 ```
 
-
 ## 🌋 No-Docker install
 This is hard mode, and involves installing more stuff.
 Probably easy on macOS, slightly involved on Linux, and impossible on Windows.
@@ -168,10 +167,16 @@ But probably just give up here and use the Docker method instead.
 Then you're ready to install signal-export:
 (Note the `[sql]` that has been added!)
 ```bash
-pip install signal-export[sql]
+pip install 'signal-export[sql]'
 ```
 
 Then you should be able to use the [Usage instructions](#usage) as above.
+
+## Uninstall
+```bash
+docker system prune
+pip uninstall signal-export
+```
 
 ## Development
 ```bash
