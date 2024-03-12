@@ -638,6 +638,8 @@ def main(
             shutil.copy2(att_src, att_dst)
         except FileNotFoundError:
             secho(f"No file to copy at {att_src}, skipping!", fg=colors.MAGENTA)
+        except OSError as exc:
+            secho(f"Error copying file {att_src}, skipping!\n{exc}", fg=colors.MAGENTA)
 
     secho("Creating markdown files")
     for md_path, md_text in create_markdown(dest, convos, contacts, quote, newlines):
