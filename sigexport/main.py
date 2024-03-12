@@ -223,6 +223,7 @@ def create_markdown(
             if add_quote:
                 try:
                     quote = msg["quote"]["text"]
+                    quote = quote.replace("\n", "\n>")
                     quote = f"\n\n> {quote}\n\n"
                 except (KeyError, TypeError):
                     pass
