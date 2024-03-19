@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 from pysqlcipher3 import dbapi2 as sqlcipher  # type: ignore[import]
-from typer import secho
 
-from .models import Contacts, Convos
+from sigexport.logging import log
+from sigexport.models import Contacts, Convos
 
 
 def fetch_data(
@@ -18,7 +18,6 @@ def fetch_data(
     manual: bool = False,
     chats: Optional[str] = None,
     include_empty: bool = False,
-    log: bool = False,
 ) -> Tuple[Convos, Contacts]:
     """Load SQLite data into dicts."""
     contacts: Contacts = {}
@@ -27,8 +26,7 @@ def fetch_data(
 
     db_file_decrypted = db_file.parents[0] / "db-decrypt.sqlite"
     if manual:
-        if log:
-            secho(f"Manually decrypting db to {db_file_decrypted}")
+        log(f"Manually decrypting db to {db_file_decrypted}")
         if db_file_decrypted.exists():
             db_file_decrypted.unlink()
         command = (
@@ -56,8 +54,7 @@ def fetch_data(
     query = "SELECT type, id, e164, name, profileName, members FROM conversations"
     c.execute(query)
     for result in c:
-        if log:
-            secho(f"\tLoading SQL results for: {result[3]}, aka {result[4]}")
+        log(f"\tLoading SQL results for: {result[3]}, aka {result[4]}")
         is_group = result[0] == "group"
         cid = result[1]
         contacts[cid] = {

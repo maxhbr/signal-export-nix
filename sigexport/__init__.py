@@ -1,3 +1,3 @@
-import pkg_resources  # type: ignore[import]
+from importlib.metadata import version
 
-__version__ = pkg_resources.get_distribution("signal-export").version
+__version__ = version("signal-export")

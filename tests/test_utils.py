@@ -1,4 +1,4 @@
-from sigexport.main import source_location, timestamp_format
+from sigexport.utils import source_location, timestamp_format
 
 
 def test_source_location():
