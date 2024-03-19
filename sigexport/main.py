@@ -242,15 +242,14 @@ def create_html(dest: Path, msgs_per_page: int = 100) -> Iterable[tuple[Path, st
                     ht_content += nav
                     page_num += 1
 
-                date, sender, body = msg
-                sender = sender[1:-1]
-                date, time = date[1:-1].replace(",", "").split(" ")
+                sender = msg.sender[1:-1]
+                date, time = msg.date[1:-1].replace(",", "").split(" ")
 
                 # reactions
                 p = re.compile(r"\(- (.*) -\)")
-                m = p.search(body)
+                m = p.search(msg.body)
                 reactions = m.groups()[0].replace(",", "") if m else ""
-                body = p.sub("", body)
+                body = p.sub("", msg.body)
 
                 # quote
                 p = re.compile(r">\n> (.*)\n>", flags=re.DOTALL)

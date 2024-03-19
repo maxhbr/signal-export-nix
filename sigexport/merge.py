@@ -43,7 +43,9 @@ def merge_chat(path_new: Path, path_old: Path) -> None:
     old = lines_to_msgs(old_raw)
     new = lines_to_msgs(new_raw)
 
-    merged = list(dict.fromkeys([m[0] + m[1] + m[2] for m in old + new]))
+    # get rid of duplicates
+    msg_dict = {m.comp(): m.repr() for m in old + new}
+    merged = list(msg_dict.values())
 
     with path_new.open("w", encoding="utf-8") as f:
         f.writelines(merged)

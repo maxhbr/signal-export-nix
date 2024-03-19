@@ -7,7 +7,7 @@ import emoji
 from typer import Exit, secho
 
 from sigexport import __version__
-from sigexport.models import Contacts
+from sigexport.models import Contacts, Message
 
 
 def timestamp_format(ts: float) -> str:
@@ -15,16 +15,17 @@ def timestamp_format(ts: float) -> str:
     return datetime.fromtimestamp(ts / 1000.0).strftime("%Y-%m-%d %H:%M")
 
 
-def lines_to_msgs(lines: list[str]) -> list[list[str]]:
+def lines_to_msgs(lines: list[str]) -> list[Message]:
     """Extract messages from lines of Markdown."""
     p = re.compile(r"^(\[\d{4}-\d{2}-\d{2},{0,1} \d{2}:\d{2}\])(.*?:)(.*\n)")
-    msgs = []
+    msgs: list[Message] = []
     for li in lines:
         m = p.match(li)
         if m:
-            msgs.append(list(m.groups()))
+            msg = Message(*m.groups())
+            msgs.append(msg)
         else:
-            msgs[-1][-1] += li
+            msgs[-1].body += li
     return msgs
 
 
