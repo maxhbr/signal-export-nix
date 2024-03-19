@@ -6,9 +6,9 @@ import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Optional, Tuple
 
 import markdown
 from bs4 import BeautifulSoup
@@ -24,7 +24,7 @@ DATA_DELIM = "-----DATA-----"
 
 def copy_attachments(
     src: Path, dest: Path, convos: Convos, contacts: Contacts
-) -> Iterable[Tuple[Path, Path]]:
+) -> Iterable[tuple[Path, Path]]:
     """Copy attachments and reorganise in destination directory."""
     src_att = Path(src) / "attachments.noindex"
     dest = Path(dest)
@@ -85,7 +85,7 @@ def create_markdown(
     contacts: Contacts,
     add_quote: bool = False,
     add_newline: bool = False,
-) -> Iterable[Tuple[Path, str]]:
+) -> Iterable[tuple[Path, str]]:
     """Output each conversation into a simple text file."""
     dest = Path(dest)
     for key, messages in convos.items():
@@ -191,7 +191,7 @@ def create_markdown(
             yield md_path, f"[{date}] {sender}: {quote}{body}{maybe_newline}"
 
 
-def create_html(dest: Path, msgs_per_page: int = 100) -> Iterable[Tuple[Path, str]]:
+def create_html(dest: Path, msgs_per_page: int = 100) -> Iterable[tuple[Path, str]]:
     """Create HTML version from Markdown input."""
     root = Path(__file__).resolve().parents[0]
     css_source = root / "style.css"
@@ -316,8 +316,8 @@ def create_html(dest: Path, msgs_per_page: int = 100) -> Iterable[Tuple[Path, st
 
 def main(
     dest: Path = Argument(None),
-    source: Optional[Path] = Option(None, help="Path to Signal source database"),
-    old: Optional[Path] = Option(None, help="Path to previous export to merge"),
+    source: Path | None = Option(None, help="Path to Signal source database"),
+    old: Path | None = Option(None, help="Path to previous export to merge"),
     overwrite: bool = Option(
         False, "--overwrite", "-o", help="Overwrite existing output"
     ),
@@ -331,7 +331,7 @@ def main(
     paginate: int = Option(
         100, "--paginate", "-p", help="Messages per page in HTML; set to 0 for infinite"
     ),
-    chats: Optional[str] = Option(
+    chats: str | None = Option(
         None, help="Comma-separated chat names to include: contact names or group names"
     ),
     html: bool = Option(True, help="Whether to create HTML output"),
@@ -352,7 +352,7 @@ def main(
     print_data: bool = Option(
         False, help="Print extracted DB data and exit (for use by Docker container)"
     ),
-    _: Optional[bool] = Option(None, "--version", callback=utils.version_callback),
+    _: bool | None = Option(None, "--version", callback=utils.version_callback),
 ) -> None:
     """Read the Signal directory and output attachments and chat to DEST directory."""
     logging.verbose = verbose

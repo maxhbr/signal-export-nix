@@ -2,7 +2,6 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List
 
 import emoji
 from typer import Exit, secho
@@ -16,7 +15,7 @@ def timestamp_format(ts: float) -> str:
     return datetime.fromtimestamp(ts / 1000.0).strftime("%Y-%m-%d %H:%M")
 
 
-def lines_to_msgs(lines: List[str]) -> List[List[str]]:
+def lines_to_msgs(lines: list[str]) -> list[list[str]]:
     """Extract messages from lines of Markdown."""
     p = re.compile(r"^(\[\d{4}-\d{2}-\d{2},{0,1} \d{2}:\d{2}\])(.*?:)(.*\n)")
     msgs = []

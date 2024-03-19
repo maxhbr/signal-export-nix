@@ -160,7 +160,7 @@ make && sudo make install
 3. Export some needed env vars:
 ```bash
 export C_INCLUDE_PATH="$(brew --prefix sqlcipher)/include"
-export LIBRARY_PATH="${brew --prefix sqlcipher)/lib"
+export LIBRARy_PATH="${brew --prefix sqlcipher)/lib"
 ```
 
 ### Windows

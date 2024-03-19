@@ -1,8 +1,8 @@
 """Package typing."""
 
-from typing import Any, Dict, List
+from typing import Any
 
-Convo = Dict[str, Any]
-Convos = Dict[str, List[Convo]]
-Contact = Dict[str, str]
-Contacts = Dict[str, Contact]
+Convo = dict[str, Any]
+Convos = dict[str, list[Convo]]
+Contact = dict[str, str]
+Contacts = dict[str, Contact]

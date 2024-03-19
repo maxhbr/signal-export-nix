@@ -4,7 +4,6 @@ import json
 import os
 import sqlite3
 from pathlib import Path
-from typing import Optional, Tuple
 
 from pysqlcipher3 import dbapi2 as sqlcipher  # type: ignore[import]
 
@@ -16,9 +15,9 @@ def fetch_data(
     db_file: Path,
     key: str,
     manual: bool = False,
-    chats: Optional[str] = None,
+    chats: str | None = None,
     include_empty: bool = False,
-) -> Tuple[Convos, Contacts]:
+) -> tuple[Convos, Contacts]:
     """Load SQLite data into dicts."""
     contacts: Contacts = {}
     convos: Convos = {}
