@@ -60,11 +60,15 @@ def merge_with_old(dest: Path, old: Path) -> None:
             dir_new = dest / name
             if dir_new.is_dir():
                 merge_attachments(dir_new / "media", dir_old / "media")
-                path_new = dir_new / "index.md"
-                path_old = dir_old / "index.md"
+                path_new = dir_new / "chat.md"
                 try:
+                    path_old = dir_old / "chat.md"
                     merge_chat(path_new, path_old)
                 except FileNotFoundError:
-                    log(f"\tNo old for {name}")
+                    try:
+                        path_old = dir_old / "index.md"  # old name
+                        merge_chat(path_new, path_old)
+                    except FileNotFoundError:
+                        log(f"\tNo old for {name}")
             else:
                 shutil.copytree(dir_old, dir_new)

@@ -7,22 +7,26 @@ import emoji
 from typer import Exit, secho
 
 from sigexport import __version__
-from sigexport.models import Contacts, Message
+from sigexport.models import Contacts, MergeMessage
 
 
-def timestamp_format(ts: float) -> str:
+def dt_from_ts(ts: float) -> datetime:
+    return datetime.fromtimestamp(ts / 1000.0)
+
+
+def timestamp_format(dt: datetime) -> str:
     """Format timestamp as 2000-01-01 00:00."""
-    return datetime.fromtimestamp(ts / 1000.0).strftime("%Y-%m-%d %H:%M")
+    return dt.strftime("%Y-%m-%d %H:%M")
 
 
-def lines_to_msgs(lines: list[str]) -> list[Message]:
+def lines_to_msgs(lines: list[str]) -> list[MergeMessage]:
     """Extract messages from lines of Markdown."""
     p = re.compile(r"^(\[\d{4}-\d{2}-\d{2},{0,1} \d{2}:\d{2}\])(.*?:)(.*\n)")
-    msgs: list[Message] = []
+    msgs: list[MergeMessage] = []
     for li in lines:
         m = p.match(li)
         if m:
-            msg = Message(*m.groups())
+            msg = MergeMessage(*m.groups())
             msgs.append(msg)
         else:
             msgs[-1].body += li

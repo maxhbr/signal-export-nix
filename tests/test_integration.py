@@ -8,8 +8,11 @@ os.environ["TZ"] = "UTC"
 time.tzset()
 
 expected_md = """[2022-08-10 19:33] Me: Test message  
+
 [2022-08-10 19:33] Me: Test image  ![2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg](./media/2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg)  
+
 [2022-08-10 19:34] Me:   [2022-08-10T19-34-11.986_00_Voice_Message_10-08-2022_15-34.m4a](./media/2022-08-10T19-34-11.986_00_Voice_Message_10-08-2022_15-34.m4a)  
+
 """  # noqa
 
 expected_html = """<!DOCTYPE html>
@@ -131,9 +134,6 @@ def test_integration():
         dest=dest,
         source=source,
         old=None,
-        overwrite=True,
-        quote=True,
-        newlines=False,
         paginate=100,
         chats=None,
         html=True,
@@ -148,7 +148,7 @@ def test_integration():
 
     output_test = dest / "Test"
     output_media = output_test / "media"
-    output_md = (output_test / "index.md").read_text()
+    output_md = (output_test / "chat.md").read_text()
     output_html = (output_test / "index.html").read_text()
 
     print()

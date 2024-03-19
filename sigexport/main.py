@@ -18,7 +18,7 @@ from typer import Argument, Exit, Option, colors, run, secho
 from sigexport import __version__, logging, templates, utils
 from sigexport.logging import log
 from sigexport.merge import merge_with_old
-from sigexport.models import Contacts, Convos
+from sigexport.models import Attachment, Contacts, Convos, Message, Reaction
 
 DATA_DELIM = "-----DATA-----"
 
@@ -81,14 +81,10 @@ def copy_attachments(
 
 
 def create_markdown(
-    dest: Path,
     convos: Convos,
     contacts: Contacts,
-    add_quote: bool = False,
-    add_newline: bool = False,
-) -> Iterable[tuple[Path, str]]:
+) -> Iterable[Message]:
     """Output each conversation into a simple text file."""
-    dest = Path(dest)
     for key, messages in convos.items():
         name = contacts[key]["name"]
         log(f"\tDoing markdown for: {name}")
@@ -96,18 +92,15 @@ def create_markdown(
         # some contact names are None
         if not name:
             name = "None"
-        md_path = dest / name / "index.md"
-        with md_path.open("w", encoding="utf-8") as _:
-            pass  # overwrite file if it exists
 
         for msg in messages:
             try:
-                date = utils.timestamp_format(msg["sent_at"])
+                date = utils.dt_from_ts(msg["sent_at"])
             except (KeyError, TypeError):
                 try:
-                    date = utils.timestamp_format(msg["sent_at"])
+                    date = utils.dt_from_ts(msg["sent_at"])
                 except (KeyError, TypeError):
-                    date = "1970-01-01 00:00"
+                    date = datetime(1970, 1, 1, 0, 0, 0)
                     log("\t\tNo timestamp or sent_at; date set to 1970")
 
             log(f"\t\tDoing {name}, msg: {date}")
@@ -144,52 +137,51 @@ def create_markdown(
                 except KeyError:
                     log(f"\t\tNo sender:\t\t{date}")
 
+            attachments: list[Attachment] = []
             for att in msg["attachments"]:
                 file_name = att["fileName"]
                 path = Path("media") / file_name
                 path = Path(str(path).replace(" ", "%20"))
-                if path.suffix and path.suffix.split(".")[1] in [
-                    "png",
-                    "jpg",
-                    "jpeg",
-                    "gif",
-                    "tif",
-                    "tiff",
-                ]:
-                    body += "!"
-                body += f"[{file_name}](./{path})  "
+                attachments.append(Attachment(name=file_name, path=str(path)))
 
+            reactions: list[Reaction] = []
             if "reactions" in msg and msg["reactions"]:
-                reactions = []
                 for r in msg["reactions"]:
                     try:
                         reactions.append(
-                            f"{contacts[r['fromId']]['name']}: {r['emoji']}"
+                            Reaction(contacts[r["fromId"]]["name"], r["emoji"])
                         )
                     except KeyError:
                         log(
                             f"\t\tReaction fromId not found in contacts: "
                             f"[{date}] {sender}: {r}"
                         )
-                body += "\n(- " + ", ".join(reactions) + " -)"
 
+            sticker = ""
             if "sticker" in msg and msg["sticker"]:
                 try:
-                    body = msg["sticker"]["data"]["emoji"]
+                    sticker = msg["sticker"]["data"]["emoji"]
                 except KeyError:
                     pass
 
             quote = ""
-            if add_quote:
-                try:
-                    quote = msg["quote"]["text"].rstrip("\n")
-                    quote = quote.replace("\n", "\n> ")
-                    quote = f"\n\n> {quote}\n\n"
-                except (KeyError, TypeError):
-                    pass
+            try:
+                quote = msg["quote"]["text"].rstrip("\n")
+                quote = quote.replace("\n", "\n> ")
+                quote = f"\n\n> {quote}\n\n"
+            except (KeyError, TypeError):
+                pass
 
-            maybe_newline = "\n" if add_newline else ""
-            yield md_path, f"[{date}] {sender}: {quote}{body}{maybe_newline}"
+            yield Message(
+                name=name,
+                date=date,
+                sender=sender,
+                body=body,
+                quote=quote,
+                sticker=sticker,
+                reactions=reactions,
+                attachments=attachments,
+            )
 
 
 def create_html(dest: Path, msgs_per_page: int = 100) -> Iterable[tuple[Path, str]]:
@@ -211,7 +203,7 @@ def create_html(dest: Path, msgs_per_page: int = 100) -> Iterable[tuple[Path, st
         if sub.is_dir():
             name = sub.stem
             log(f"\tDoing html for {name}")
-            path = sub / "index.md"
+            path = sub / "chat.md"
             # touch first
             open(path, "a", encoding="utf-8")
             with path.open(encoding="utf-8") as f:
@@ -318,25 +310,19 @@ def create_html(dest: Path, msgs_per_page: int = 100) -> Iterable[tuple[Path, st
 OptionalPath = Optional[Path]
 OptionalStr = Optional[str]
 
+
 def main(
     dest: Path = Argument(None),
     source: OptionalPath = Option(None, help="Path to Signal source database"),
     old: OptionalPath = Option(None, help="Path to previous export to merge"),
-    overwrite: bool = Option(
-        False, "--overwrite", "-o", help="Overwrite existing output"
-    ),
-    quote: bool = Option(True, "--quote/--no-quote", "-q", help="Include quote text"),
-    newlines: bool = Option(
-        True,
-        "--newlines/--no-newlines",
-        "-n",
-        help="Whether to insert blank lines between each message to improve Markdown rendering",  # NoQA: E501
-    ),
     paginate: int = Option(
         100, "--paginate", "-p", help="Messages per page in HTML; set to 0 for infinite"
     ),
     chats: OptionalStr = Option(
         None, help="Comma-separated chat names to include: contact names or group names"
+    ),
+    json_output: bool = Option(
+        False, "--json/--no-json", "-j", help="Whether to create JSON output"
     ),
     html: bool = Option(True, help="Whether to create HTML output"),
     list_chats: bool = Option(
@@ -474,13 +460,12 @@ def main(
         raise Exit()
 
     dest = Path(dest).expanduser()
-    if not dest.is_dir() or overwrite:
+    if not dest.is_dir():
         dest.mkdir(parents=True, exist_ok=True)
     else:
         secho(
             f"Output folder '{dest}' already exists, didn't do anything!", fg=colors.RED
         )
-        secho("Use --overwrite (or -o) to ignore existing directory.", fg=colors.RED)
         raise Exit()
 
     contacts = utils.fix_names(contacts)
@@ -494,14 +479,27 @@ def main(
         except OSError as exc:
             secho(f"Error copying file {att_src}, skipping!\n{exc}", fg=colors.MAGENTA)
 
+    if json_output and old:
+        secho(
+            "Warning: currently, JSON does not support merging with the --old flag",
+            fg=colors.RED,
+        )
+
     secho("Creating markdown files")
-    for md_path, md_text in create_markdown(dest, convos, contacts, quote, newlines):
-        with md_path.open("a", encoding="utf-8") as md_file:
-            print(md_text, file=md_file)
+    for msg in create_markdown(convos, contacts):
+        name = msg.name
+        md_path = dest / name / "chat.md"
+        json_path = dest / name / "data.json"
+        with md_path.open("a", encoding="utf-8") as f:
+            print(msg.repr(), file=f)
+        with json_path.open("a", encoding="utf-8") as f:
+            print(msg.dict_str(), file=f)
+
     if old:
         secho(f"Merging old at {old} into output directory")
         secho("No existing files will be deleted or overwritten!")
         merge_with_old(dest, Path(old))
+
     if html:
         secho("Creating HTML files")
         if paginate <= 0:
