@@ -322,7 +322,7 @@ def main(
     ),
     quote: bool = Option(True, "--quote/--no-quote", "-q", help="Include quote text"),
     newlines: bool = Option(
-        False,
+        True,
         "--newlines/--no-newlines",
         "-n",
         help="Whether to insert blank lines between each message to improve Markdown rendering",  # NoQA: E501
