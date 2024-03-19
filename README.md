@@ -155,8 +155,13 @@ make && sudo make install
 ```
 
 ### macOS
-- Install [Homebrew](https://brew.sh).
-- Run `brew install openssl sqlcipher`
+1. Install [Homebrew](https://brew.sh).
+2. Run `brew install openssl sqlcipher`
+3. Export some needed env vars:
+```bash
+export C_INCLUDE_PATH="$(brew --prefix sqlcipher)/include"
+export LIBRARY_PATH="${brew --prefix sqlcipher)/lib"
+```
 
 ### Windows
 Ubuntu on WSL2 should work!

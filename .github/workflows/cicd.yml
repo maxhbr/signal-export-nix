@@ -12,7 +12,7 @@ on:
       - 'Dockerfile'
       - 'pyproject.toml'
   schedule:
-    - cron:  '0 2 2 * *'
+    - cron: '0 2 2 * *'
   workflow_dispatch:
 
 jobs:
@@ -61,14 +61,15 @@ jobs:
       - name: Set tag env var
         run: echo "TAG=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
 
-      - uses: addnab/docker-run-action@v3
+      - name: test
+        uses: addnab/docker-run-action@v3
         with:
           image: "carderne/sigexport:${{ env.TAG }}"
           options: -v ${{ github.workspace }}:/fresh
           run: |
             cd /fresh
-            pip install . pytest pytest-cov
-            pytest --cov sigexport
+            PDM_BUILD_SCM_VERSION=0.0.1 pip install . pytest
+            pytest
 
   publish:
     needs: test

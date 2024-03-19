@@ -1,17 +1,14 @@
-[build-system]
-requires = [
-    "setuptools>=65",
-    "wheel>=0.37.1",
-    "setuptools-scm[toml]>=7.0.5",
-]
-build-backend = "setuptools.build_meta"
+[tool.rye.scripts]
+check = "pyright"
+build = "docker buildx build --tag=carderne/sigexport:dev ."
+test = "docker run --rm --entrypoint='' -v ./:/fresh carderne/sigexport:dev bash -c 'cd /fresh && pip install . pytest && pytest'"
 
 [project]
 name = "signal-export"
 description = "Export Signal conversations to Markdown and HTML"
 readme = "README.md"
 license = {text = "BSD 3-Clause License"}
-requires-python = ">=3.8"
+requires-python = ">= 3.8"
 keywords = ["backup", "chat", "export"]
 
 authors = [
@@ -34,11 +31,11 @@ dependencies = [
     "typer[all] ~= 0.7",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "black",
+[tool.rye]
+managed = true
+dev-dependencies = [
     "build",
-    "mypy",
+    "pyright",
     "pre-commit",
     "pytest",
     "pytest-cov",
@@ -48,8 +45,10 @@ dev = [
     "types-Markdown",
     "types-emoji",
 ]
+
+[project.optional-dependencies]
 sql = [
-    'pysqlcipher3 == 1.1.0; python_version < "3.11"',
+    'pysqlcipher3 == 1.1.0; python_version <  "3.11"',
     'pysqlcipher3 >= 1.2.0; python_version >= "3.11"',
 ]
 
@@ -57,20 +56,18 @@ sql = [
 homepage = "https://github.com/carderne/signal-export"
 repository = "https://github.com/carderne/signal-export"
 
-[tool.setuptools]
-packages = ["sigexport"]
-include-package-data = true  # defaults to true
-
-[tool.setuptools.package-data]
-sigexport = ["*.css"]
-
-[tool.setuptools_scm]
-
 [project.scripts]
 sigexport = "sigexport.main:cli"
 
-[tool.black]
-line-length = 88
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.build]
+includes = ["sigexport/"]
+
+[tool.pdm.version]
+source = "scm"
 
 [tool.ruff]
 target-version = "py38"
@@ -94,14 +91,13 @@ select = [
 [tool.ruff.lint.isort]
 known-first-party = ["sigexport"]
 
-[tool.mypy]
-show_error_codes = true
-show_error_context = true
-show_traceback = true
-disallow_untyped_defs = true
-disallow_any_unimported = true
-no_implicit_optional = true
-check_untyped_defs = true
-warn_return_any = true
-warn_unused_ignores = true
-warn_unreachable = true
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+include = ["sigexport", "tests"]
+reportMissingImports = true
+reportMissingParameterType = true
+reportUnnecessaryTypeIgnoreComment = true
+reportDeprecated = true
+pythonVersion = "3.12"
+pythonPlatform = "Linux"

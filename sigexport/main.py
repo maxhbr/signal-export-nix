@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Iterable, Optional, Tuple
 
 import markdown
-from bs4 import BeautifulSoup  # type: ignore[import]
+from bs4 import BeautifulSoup
 from typer import Argument, Exit, Option, colors, run, secho
 
 from sigexport import __version__, logging, templates, utils
@@ -77,7 +77,6 @@ def copy_attachments(
                         log(f"\t\tAttachment not found:\t{name}\t{p}")
             else:
                 msg["attachments"] = []
-
 
 
 def create_markdown(

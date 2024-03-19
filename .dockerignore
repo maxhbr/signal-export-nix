@@ -7,7 +7,6 @@ Makefile
 .pre-commit-config.yaml
 __pycache__/
 .pytest_cache/
-README.md
 signal_export.egg-info/
 tests/
 .tox/

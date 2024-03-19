@@ -1,7 +1,8 @@
-FROM python:3.10.6-slim-bullseye
+FROM python:3.12.2-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1
 ENV LD_LIBRARY_PATH=/usr/local/lib
+WORKDIR /app
 
 RUN apt-get update && \
     apt-get install -y git gcc libsqlite3-dev tclsh libssl-dev libc6-dev make
@@ -13,14 +14,10 @@ RUN git clone --depth=1 --branch=master https://github.com/sqlcipher/sqlcipher.g
   make && \
   make install
 
-RUN pip3 install \
-    beautifulsoup4==4.11.1 \
-    typer[all]==0.6.1 \
-    emoji==1.7.0 \
-    Markdown==3.4.1 \
-    pysqlcipher3==1.1.0
+COPY requirements.lock ./
+RUN sed -i '/^-e file:/d' requirements.lock
+RUN pip install -r requirements.lock
 
-WORKDIR app
 COPY . .
 RUN --mount=source=.git,target=.git,type=bind pip install --no-cache-dir .
 
