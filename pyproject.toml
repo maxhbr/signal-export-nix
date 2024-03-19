@@ -3,6 +3,8 @@ check = "pyright"
 build = "docker buildx build --tag=carderne/sigexport:dev ."
 test = "docker run --rm --entrypoint='' -v ./:/fresh carderne/sigexport:dev bash -c 'cd /fresh && pip install . pytest && pytest'"
 
+run = "sigexport"
+
 [project]
 name = "signal-export"
 description = "Export Signal conversations to Markdown and HTML"

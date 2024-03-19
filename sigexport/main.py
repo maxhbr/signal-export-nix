@@ -9,6 +9,7 @@ import sys
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 import markdown
 from bs4 import BeautifulSoup
@@ -313,10 +314,14 @@ def create_html(dest: Path, msgs_per_page: int = 100) -> Iterable[tuple[Path, st
             yield ht_path, ht_text
 
 
+# these are here because tiangolo/typer doesn't like Foo | None syntax
+OptionalPath = Optional[Path]
+OptionalStr = Optional[str]
+
 def main(
     dest: Path = Argument(None),
-    source: Path | None = Option(None, help="Path to Signal source database"),
-    old: Path | None = Option(None, help="Path to previous export to merge"),
+    source: OptionalPath = Option(None, help="Path to Signal source database"),
+    old: OptionalPath = Option(None, help="Path to previous export to merge"),
     overwrite: bool = Option(
         False, "--overwrite", "-o", help="Overwrite existing output"
     ),
@@ -330,7 +335,7 @@ def main(
     paginate: int = Option(
         100, "--paginate", "-p", help="Messages per page in HTML; set to 0 for infinite"
     ),
-    chats: str | None = Option(
+    chats: OptionalStr = Option(
         None, help="Comma-separated chat names to include: contact names or group names"
     ),
     html: bool = Option(True, help="Whether to create HTML output"),
@@ -351,7 +356,7 @@ def main(
     print_data: bool = Option(
         False, help="Print extracted DB data and exit (for use by Docker container)"
     ),
-    _: bool | None = Option(None, "--version", callback=utils.version_callback),
+    _: bool = Option(False, "--version", callback=utils.version_callback),
 ) -> None:
     """Read the Signal directory and output attachments and chat to DEST directory."""
     logging.verbose = verbose
