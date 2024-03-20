@@ -1,11 +1,11 @@
 """Extract data from Signal DB."""
 
 import json
-import os
 import sqlite3
+import subprocess
 from pathlib import Path
 
-from pysqlcipher3 import dbapi2 as sqlcipher  # type: ignore[import]
+from pysqlcipher3 import dbapi2 as sqlcipher
 
 from sigexport.logging import log
 from sigexport.models import Contacts, Convos
@@ -28,7 +28,7 @@ def fetch_data(
         log(f"Manually decrypting db to {db_file_decrypted}")
         if db_file_decrypted.exists():
             db_file_decrypted.unlink()
-        command = (
+        cmd = (
             f'echo "'
             f"PRAGMA key = \\\"x'{key}'\\\";"
             f"ATTACH DATABASE '{db_file_decrypted}' AS plaintext KEY '';"
@@ -36,12 +36,12 @@ def fetch_data(
             f"DETACH DATABASE plaintext;"
             f'" | sqlcipher {db_file}'
         )
-        os.system(command)  # NoQA: S605
+        subprocess.run(cmd)  # NoQA: S603
         # use sqlite instead of sqlcipher as DB already decrypted
         db = sqlite3.connect(str(db_file_decrypted))
         c = db.cursor()
     else:
-        db = sqlcipher.connect(str(db_file))
+        db = sqlcipher.connect(str(db_file))  # type: ignore
         c = db.cursor()
         # param binding doesn't work for pragmas, so use a direct string concat
         c.execute(f"PRAGMA KEY = \"x'{key}'\"")

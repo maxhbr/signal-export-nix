@@ -1,10 +1,9 @@
 import json
+import re
 from collections import namedtuple
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any
-
-from sigexport import utils
 
 Convo = dict[str, Any]
 Convos = dict[str, list[Convo]]
@@ -15,6 +14,33 @@ Contacts = dict[str, Contact]
 Reaction = namedtuple("Reaction", ["name", "emoji"])
 
 
+def is_image(p: str) -> bool:
+    suffix = p.split(".")
+    return len(suffix) > 1 and suffix[-1] in [
+        "png",
+        "jpg",
+        "jpeg",
+        "gif",
+        "tif",
+        "tiff",
+    ]
+
+
+def is_audio(p: str) -> bool:
+    suffix = p.split(".")
+    return len(suffix) > 1 and suffix[-1] in [
+        "m4a",
+        "aac",
+    ]
+
+
+def is_video(p: str) -> bool:
+    suffix = p.split(".")
+    return len(suffix) > 1 and suffix[-1] in [
+        "mp4",
+    ]
+
+
 @dataclass
 class Attachment:
     name: str
@@ -23,7 +49,6 @@ class Attachment:
 
 @dataclass
 class Message:
-    name: str  # TODO: this should be specified in a containing obj
     date: datetime
     sender: str
     body: str
@@ -32,8 +57,8 @@ class Message:
     reactions: list[Reaction]
     attachments: list[Attachment]
 
-    def repr(self: "Message") -> str:
-        date_str = utils.timestamp_format(self.date)
+    def to_md(self: "Message") -> str:
+        date_str = self.date.strftime("%Y-%m-%d %H:%M:%S")
         body = self.body
 
         if len(self.reactions) > 0:
@@ -41,41 +66,74 @@ class Message:
             body = body + "\n(- " + ", ".join(reactions) + " -)"
 
         if len(self.sticker) > 0:
-            body = body + "\n" + self.sticker
+            body = body + "\n(( " + self.sticker + " ))"
 
         for att in self.attachments:
-            suffix = att.path.split(".")
-            if len(suffix) > 1 and suffix[-1] in [
-                "png",
-                "jpg",
-                "jpeg",
-                "gif",
-                "tif",
-                "tiff",
-            ]:
+            if is_image(att.path):
                 body += "!"
             body += f"[{att.name}](./{att.path})  "
 
         return f"[{date_str}] {self.sender}: {self.quote}{body}\n"
 
+    def comp(self: "Message") -> tuple[datetime, str, str]:
+        date = self.date.replace(second=0, microsecond=0)
+        return (date, self.sender, self.body.replace("\n", "").replace(">", ""))
+
     def dict(self: "Message") -> dict:
         msg_dict = asdict(self)
         msg_dict["date"] = msg_dict["date"].isoformat()
-        del msg_dict["name"]
         return msg_dict
 
     def dict_str(self: "Message") -> str:
         return json.dumps(self.dict(), ensure_ascii=False)
 
 
+Chats = dict[str, list[Message]]
+
+
 @dataclass
 class MergeMessage:
-    date: str
+    date: datetime
     sender: str
     body: str
 
-    def repr(self: "MergeMessage") -> str:
-        return self.date + self.sender + self.body
+    def to_message(self: "MergeMessage") -> Message:
+        body = self.body
 
-    def comp(self: "MergeMessage") -> str:
-        return self.repr().replace("\n", "").replace(">", "")
+        p_reactions = re.compile(r"\n\(- (.*) -\)")
+        m_reactions = re.findall(p_reactions, body)
+        reactions = []
+        if m_reactions:
+            reactions = [Reaction(*r.split(":")) for r in m_reactions[0].split(", ")]
+        body = re.sub(p_reactions, "", body)
+
+        p_stickers = r"\n(\(\( (.*) ))"
+        stickers = re.findall(p_stickers, self.body)
+        sticker = stickers[0] if stickers else ""
+        body = re.sub(p_stickers, "", body)
+
+        p_quote = re.compile(r"\n> (.*)$")
+        m_quote = re.findall(p_quote, self.body)
+        quote = ""
+        if m_quote:
+            quote = "".join(m_quote)
+        body = re.sub(p_quote, "", body)
+
+        p_attachments = r"!{0,1}\[(.*?)\]\((.*?)\)"
+        m_attachments = re.findall(p_attachments, self.body)
+        attachments = []
+        if m_attachments:
+            attachments = [Attachment(name=g[0], path=g[1]) for g in m_attachments]
+        body = re.sub(p_attachments, "", body)
+
+        body = body.rstrip("\n")
+
+        return Message(
+            date=self.date,
+            sender=self.sender,
+            body=body,
+            quote=quote,
+            reactions=reactions,
+            sticker=sticker,
+            attachments=attachments,
+        )

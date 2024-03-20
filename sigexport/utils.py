@@ -6,27 +6,30 @@ from pathlib import Path
 import emoji
 from typer import Exit, secho
 
-from sigexport import __version__
-from sigexport.models import Contacts, MergeMessage
+from sigexport import __version__, models
 
 
 def dt_from_ts(ts: float) -> datetime:
     return datetime.fromtimestamp(ts / 1000.0)
 
 
-def timestamp_format(dt: datetime) -> str:
-    """Format timestamp as 2000-01-01 00:00."""
-    return dt.strftime("%Y-%m-%d %H:%M")
+def parse_datetime(input_str: str) -> datetime:
+    try:
+        return datetime.strptime(input_str, "%Y-%m-%d %H:%M")
+    except ValueError:
+        return datetime.strptime(input_str, "%Y-%m-%d, %H:%M")
 
 
-def lines_to_msgs(lines: list[str]) -> list[MergeMessage]:
+def lines_to_msgs(lines: list[str]) -> list[models.MergeMessage]:
     """Extract messages from lines of Markdown."""
-    p = re.compile(r"^(\[\d{4}-\d{2}-\d{2},{0,1} \d{2}:\d{2}\])(.*?:)(.*\n)")
-    msgs: list[MergeMessage] = []
+    p = re.compile(r"^\[(\d{4}-\d{2}-\d{2},{0,1} \d{2}:\d{2})\](.*?:)(.*\n)")
+    msgs: list[models.MergeMessage] = []
     for li in lines:
         m = p.match(li)
         if m:
-            msg = MergeMessage(*m.groups())
+            date_str, sender, body = m.groups()
+            date = parse_datetime(date_str)
+            msg = models.MergeMessage(date=date, sender=sender, body=body)
             msgs.append(msg)
         else:
             msgs[-1].body += li
@@ -58,7 +61,7 @@ def source_location() -> Path:
     return source_path
 
 
-def fix_names(contacts: Contacts) -> Contacts:
+def fix_names(contacts: models.Contacts) -> models.Contacts:
     """Convert contact names to filesystem-friendly."""
     fixed_contact_names = set()
     for key, item in contacts.items():

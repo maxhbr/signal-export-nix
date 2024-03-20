@@ -1,8 +1,7 @@
 [tool.rye.scripts]
 check = "pyright"
-build = "docker buildx build --tag=carderne/sigexport:dev ."
-test = "docker run --rm --entrypoint='' -v ./:/fresh carderne/sigexport:dev bash -c 'cd /fresh && pip install . pytest && pytest'"
-
+build = "docker build --tag=carderne/sigexport:dev ."
+test = "pytest"
 run = "sigexport"
 
 [project]

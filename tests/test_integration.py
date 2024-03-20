@@ -1,5 +1,6 @@
 import os
 import shutil
+import tempfile
 import time
 from pathlib import Path
 
@@ -7,11 +8,11 @@ os.environ["TZ"] = "UTC"
 
 time.tzset()
 
-expected_md = """[2022-08-10 19:33] Me: Test message  
+expected_md = """[2022-08-10 19:33:38] Me: Test message  
 
-[2022-08-10 19:33] Me: Test image  ![2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg](./media/2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg)  
+[2022-08-10 19:33:48] Me: Test image  ![2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg](./media/2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg)  
 
-[2022-08-10 19:34] Me:   [2022-08-10T19-34-11.986_00_Voice_Message_10-08-2022_15-34.m4a](./media/2022-08-10T19-34-11.986_00_Voice_Message_10-08-2022_15-34.m4a)  
+[2022-08-10 19:34:11] Me:   [2022-08-10T19-34-11.986_00_Voice_Message_10-08-2022_15-34.m4a](./media/2022-08-10T19-34-11.986_00_Voice_Message_10-08-2022_15-34.m4a)  
 
 """  # noqa
 
@@ -49,7 +50,7 @@ expected_html = """<!DOCTYPE html>
                     2022-08-10
                 </span>
                 <span class="time">
-                    19:33
+                    19:33:38
                 </span>
                 <span class="sender">
                     Me
@@ -67,7 +68,7 @@ expected_html = """<!DOCTYPE html>
                     2022-08-10
                 </span>
                 <span class="time">
-                    19:33
+                    19:33:48
                 </span>
                 <span class="sender">
                     Me
@@ -75,20 +76,20 @@ expected_html = """<!DOCTYPE html>
                 <span class="body">
                     <p>
                         Test image
-                        <figure>
-                            <label for="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg">
-                                <img alt="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg" load="lazy" src="./media/2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg"/>
-                            </label>
-                            <input class="modal-state" id="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg" type="checkbox"/>
-                            <div class="modal">
-                                <label for="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg">
-                                    <div class="modal-content">
-                                        <img alt="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg" class="modal-photo" loading="lazy" src="./media/2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg"/>
-                                    </div>
-                                </label>
-                            </div>
-                        </figure>
                     </p>
+                    <figure>
+                        <label for="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg">
+                            <img alt="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg" load="lazy" src="./media/2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg"/>
+                        </label>
+                        <input class="modal-state" id="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg" type="checkbox"/>
+                        <div class="modal">
+                            <label for="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg">
+                                <div class="modal-content">
+                                    <img alt="2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg" class="modal-photo" loading="lazy" src="./media/2022-08-10T19-33-48.638_00_signal-2022-08-10-153348.jpeg"/>
+                                </div>
+                            </label>
+                        </div>
+                    </figure>
                 </span>
                 <span class="reaction">
                 </span>
@@ -98,17 +99,15 @@ expected_html = """<!DOCTYPE html>
                     2022-08-10
                 </span>
                 <span class="time">
-                    19:34
+                    19:34:11
                 </span>
                 <span class="sender">
                     Me
                 </span>
                 <span class="body">
-                    <p>
-                        <audio controls="">
-                            <source src="./media/2022-08-10T19-34-11.986_00_Voice_Message_10-08-2022_15-34.m4a" type="audio/mp4"/>
-                        </audio>
-                    </p>
+                    <audio controls="">
+                        <source src="./media/2022-08-10T19-34-11.986_00_Voice_Message_10-08-2022_15-34.m4a" type="audio/mp4"/>
+                    </audio>
                 </span>
                 <span class="reaction">
                 </span>
@@ -127,7 +126,7 @@ def test_integration():
     from sigexport.main import main
 
     root = Path(__file__).resolve().parents[0]
-    dest = Path("/tmp/signal-test-output")
+    dest = Path(tempfile.TemporaryDirectory().name)
     source = root / "data"
 
     main(
@@ -136,7 +135,6 @@ def test_integration():
         old=None,
         paginate=100,
         chats=None,
-        html=True,
         list_chats=False,
         include_empty=False,
         manual=False,

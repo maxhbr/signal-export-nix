@@ -1,74 +1,59 @@
 import shutil
 from pathlib import Path
 
-from typer import colors
-
+from sigexport import files, models, utils
 from sigexport.logging import log
-from sigexport.utils import lines_to_msgs
 
 
-def merge_attachments(media_new: Path, media_old: Path) -> None:
-    """Merge new and old attachments directories."""
-    for f in media_old.iterdir():
-        if f.is_file():
-            try:
-                shutil.copy2(f, media_new)
-            except shutil.SameFileError:
-                log(
-                    f"Skipped file {f} as duplicate found in new export directory!",
-                    fg=colors.RED,
-                )
-
-
-def merge_chat(path_new: Path, path_old: Path) -> None:
+def merge_chat(new: list[models.Message], path_old: Path) -> list[models.Message]:
     """Merge new and old chat markdowns."""
     with path_old.open(encoding="utf-8") as f:
         old_raw = f.readlines()
-    with path_new.open(encoding="utf-8") as f:
-        new_raw = f.readlines()
+
+    old = utils.lines_to_msgs(old_raw)
+    old_msgs = [o.to_message() for o in old]
 
     try:
         a = old_raw[0][:30]
         b = old_raw[-1][:30]
-        c = new_raw[0][:30]
-        d = new_raw[-1][:30]
+        c = new[0].to_md()[:30]
+        d = new[-1].to_md()[:30]
         log(f"\t\tFirst line old:\t{a}")
         log(f"\t\tLast line old:\t{b}")
         log(f"\t\tFirst line new:\t{c}")
         log(f"\t\tLast line new:\t{d}")
     except IndexError:
         log("\t\tNo new messages for this conversation")
-        return
-
-    old = lines_to_msgs(old_raw)
-    new = lines_to_msgs(new_raw)
 
     # get rid of duplicates
-    msg_dict = {m.comp(): m.repr() for m in old + new}
+    msg_dict = {m.comp(): m for m in old_msgs + new}
     merged = list(msg_dict.values())
 
-    with path_new.open("w", encoding="utf-8") as f:
-        f.writelines(merged)
+    return merged
 
 
-def merge_with_old(dest: Path, old: Path) -> None:
+def merge_with_old(chat_dict: models.Chats, dest: Path, old: Path) -> models.Chats:
     """Main function for merging new and old."""
-    for dir_old in old.iterdir():
+    new_chat_dict: models.Chats = {}
+    for name, msgs in chat_dict.items():
+        # for dir_old in old.iterdir():
+        dir_old = old / name
         if dir_old.is_dir():
-            name = dir_old.stem
             log(f"\tMerging {name}")
             dir_new = dest / name
             if dir_new.is_dir():
-                merge_attachments(dir_new / "media", dir_old / "media")
-                path_new = dir_new / "chat.md"
+                files.merge_attachments(dir_new / "media", dir_old / "media")
                 try:
                     path_old = dir_old / "chat.md"
-                    merge_chat(path_new, path_old)
+                    msgs_new = merge_chat(msgs, path_old)
+                    new_chat_dict[name] = msgs_new
                 except FileNotFoundError:
                     try:
                         path_old = dir_old / "index.md"  # old name
-                        merge_chat(path_new, path_old)
+                        msgs_new = merge_chat(msgs, path_old)
+                        new_chat_dict[name] = msgs_new
                     except FileNotFoundError:
                         log(f"\tNo old for {name}")
             else:
                 shutil.copytree(dir_old, dir_new)
+    return new_chat_dict
