@@ -2,7 +2,7 @@
 check = "pyright"
 build = "docker build --tag=carderne/sigexport:dev ."
 test = "pytest"
-run = "sigexport"
+sig = "sigexport"
 
 [project]
 name = "signal-export"

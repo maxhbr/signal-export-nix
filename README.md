@@ -187,18 +187,16 @@ pip uninstall signal-export
 ```bash
 git clone https://github.com/carderne/signal-export.git
 cd signal-export
-pip install -e .[dev,sql]
-pre-commit install
+rye sync --no-lock
 ```
 
-Run tests with:
+Various dev commands:
 ```bash
-make test
-```
-
-And check types with:
-```bash
-mypy sigexport/
+rye fmt         # format
+rye lint        # lint
+rye run check   # typecheck
+rye run test    # test
+rye run sig     # run signal-export
 ```
 
 ## Similar things
