@@ -1,83 +1,84 @@
 """Extract data from Signal DB."""
 
 import json
-import sqlite3
-import subprocess
 from pathlib import Path
 
 from pysqlcipher3 import dbapi2 as sqlcipher
 
+from sigexport import models
 from sigexport.logging import log
-from sigexport.models import Contacts, Convos
 
 
 def fetch_data(
     db_file: Path,
     key: str,
-    manual: bool = False,
     chats: str | None = None,
     include_empty: bool = False,
-) -> tuple[Convos, Contacts]:
+) -> tuple[models.Convos, models.Contacts]:
     """Load SQLite data into dicts."""
-    contacts: Contacts = {}
-    convos: Convos = {}
+    contacts: models.Contacts = {}
+    convos: models.Convos = {}
     chats_list = chats.split(",") if chats else []
 
-    db_file_decrypted = db_file.parents[0] / "db-decrypt.sqlite"
-    if manual:
-        log(f"Manually decrypting db to {db_file_decrypted}")
-        if db_file_decrypted.exists():
-            db_file_decrypted.unlink()
-        cmd = (
-            f'echo "'
-            f"PRAGMA key = \\\"x'{key}'\\\";"
-            f"ATTACH DATABASE '{db_file_decrypted}' AS plaintext KEY '';"
-            f"SELECT sqlcipher_export('plaintext');"
-            f"DETACH DATABASE plaintext;"
-            f'" | sqlcipher {db_file}'
-        )
-        subprocess.run(cmd)  # NoQA: S603
-        # use sqlite instead of sqlcipher as DB already decrypted
-        db = sqlite3.connect(str(db_file_decrypted))
-        c = db.cursor()
-    else:
-        db = sqlcipher.connect(str(db_file))  # type: ignore
-        c = db.cursor()
-        # param binding doesn't work for pragmas, so use a direct string concat
-        c.execute(f"PRAGMA KEY = \"x'{key}'\"")
-        c.execute("PRAGMA cipher_page_size = 4096")
-        c.execute("PRAGMA kdf_iter = 64000")
-        c.execute("PRAGMA cipher_hmac_algorithm = HMAC_SHA512")
-        c.execute("PRAGMA cipher_kdf_algorithm = PBKDF2_HMAC_SHA512")
+    db = sqlcipher.connect(str(db_file))  # type: ignore
+    c = db.cursor()
+    # param binding doesn't work for pragmas, so use a direct string concat
+    c.execute(f"PRAGMA KEY = \"x'{key}'\"")
+    c.execute("PRAGMA cipher_page_size = 4096")
+    c.execute("PRAGMA kdf_iter = 64000")
+    c.execute("PRAGMA cipher_hmac_algorithm = HMAC_SHA512")
+    c.execute("PRAGMA cipher_kdf_algorithm = PBKDF2_HMAC_SHA512")
 
     query = "SELECT type, id, e164, name, profileName, members FROM conversations"
     c.execute(query)
     for result in c:
         log(f"\tLoading SQL results for: {result[3]}, aka {result[4]}")
+        members = []
+        if result[5]:
+            members = result[5].split(" ")
         is_group = result[0] == "group"
         cid = result[1]
-        contacts[cid] = {
-            "id": cid,
-            "name": result[3],
-            "number": result[2],
-            "profileName": result[4],
-            "is_group": is_group,
-        }
-        if contacts[cid]["name"] is None:
-            contacts[cid]["name"] = contacts[cid]["profileName"]
+        contacts[cid] = models.Contact(
+            id=cid,
+            name=result[3],
+            number=result[2],
+            profile_name=result[4],
+            members=members,
+            is_group=is_group,
+        )
+        if contacts[cid].name is None:
+            contacts[cid].name = contacts[cid].profile_name
 
         if not chats or (result[3] in chats_list or result[4] in chats_list):
             convos[cid] = []
 
-    c.execute("SELECT json, conversationId FROM messages ORDER BY sent_at")
+    query = "SELECT json, conversationId FROM messages ORDER BY sent_at"
+    c.execute(query)
     for result in c:
-        content = json.loads(result[0])
+        res = json.loads(result[0])
         cid = result[1]
         if cid and cid in convos:
-            convos[cid].append(content)
-
-    if db_file_decrypted.exists():
-        db_file_decrypted.unlink()
+            if res.get("type") in ["keychange", "profile-change"]:
+                continue
+            con = models.RawMessage(
+                conversation_id=res["conversationId"],
+                id=res["id"],
+                type=res.get("type"),
+                body=res.get("body", ""),
+                contact=res.get("contact"),
+                source=res.get("source"),
+                timestamp=res.get("timestamp"),
+                sent_at=res.get("sent_at"),
+                has_attachments=res.get("has_attachments", False),
+                attachments=res.get("attachments", []),
+                read_status=res.get("read_status"),
+                seen_status=res.get("seen_status"),
+                call_history=res.get("call_history"),
+                reactions=res.get("reactions", []),
+                sticker=res.get("sticker"),
+                quote=res.get("quote"),
+            )
+            convos[cid].append(con)
 
     if not include_empty:
         convos = {key: val for key, val in convos.items() if len(val) > 0}

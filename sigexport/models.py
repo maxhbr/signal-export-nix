@@ -5,11 +5,51 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any
 
-Convo = dict[str, Any]
-Convos = dict[str, list[Convo]]
-Contact = dict[str, str]
-Contacts = dict[str, Contact]
 
+@dataclass
+class RawMessage:
+    conversation_id: str
+    id: str
+
+    body: str
+    type: str | None
+    contact: str | None
+    source: Any | None
+
+    timestamp: int | None
+    sent_at: int | None
+
+    has_attachments: bool
+    attachments: list[dict[str, str]]
+
+    read_status: bool | None
+    seen_status: bool | None
+
+    call_history: dict[str, Any] | None
+    reactions: list[dict[str, Any]]
+    sticker: dict[str, Any] | None
+    quote: dict[str, Any] | None
+
+    def get_ts(self: "RawMessage") -> int:
+        if self.sent_at:
+            return self.sent_at
+        elif self.timestamp:
+            return self.timestamp
+        return 0
+
+
+@dataclass
+class Contact:
+    id: str
+    name: str
+    number: str
+    profile_name: str
+    is_group: bool
+    members: list[str] | None
+
+
+Contacts = dict[str, Contact]
+Convos = dict[str, list[RawMessage]]
 
 Reaction = namedtuple("Reaction", ["name", "emoji"])
 

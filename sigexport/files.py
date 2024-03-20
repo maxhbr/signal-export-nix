@@ -17,7 +17,7 @@ def copy_attachments(
     dest = Path(dest)
 
     for key, messages in convos.items():
-        name = contacts[key]["name"]
+        name = contacts[key].name
         log(f"\tCopying attachments for: {name}")
         # some contact names are None
         if not name:
@@ -25,10 +25,10 @@ def copy_attachments(
         contact_path = dest / name / "media"
         contact_path.mkdir(exist_ok=True, parents=True)
         for msg in messages:
-            if "attachments" in msg and msg["attachments"]:
-                attachments = msg["attachments"]
+            if msg.attachments:
+                attachments = msg.attachments
                 date = (
-                    datetime.fromtimestamp(msg["timestamp"] / 1000.0)
+                    datetime.fromtimestamp(msg.get_ts() / 1000)
                     .isoformat(timespec="milliseconds")
                     .replace(":", "-")
                 )
@@ -63,7 +63,7 @@ def copy_attachments(
                         p = att["path"] if "path" in att else ""
                         log(f"\t\tAttachment not found:\t{name}\t{p}")
             else:
-                msg["attachments"] = []
+                msg.attachments = []
 
 
 def merge_attachments(media_new: Path, media_old: Path) -> None:

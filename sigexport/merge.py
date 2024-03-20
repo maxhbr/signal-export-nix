@@ -32,11 +32,13 @@ def merge_chat(new: list[models.Message], path_old: Path) -> list[models.Message
     return merged
 
 
-def merge_with_old(chat_dict: models.Chats, dest: Path, old: Path) -> models.Chats:
+def merge_with_old(
+    chat_dict: models.Chats, contacts: models.Contacts, dest: Path, old: Path
+) -> models.Chats:
     """Main function for merging new and old."""
     new_chat_dict: models.Chats = {}
-    for name, msgs in chat_dict.items():
-        # for dir_old in old.iterdir():
+    for key, msgs in chat_dict.items():
+        name = contacts[key].name
         dir_old = old / name
         if dir_old.is_dir():
             log(f"\tMerging {name}")

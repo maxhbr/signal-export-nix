@@ -137,7 +137,6 @@ def test_integration():
         chats=None,
         list_chats=False,
         include_empty=False,
-        manual=False,
         verbose=True,
         use_docker=False,
         docker_image="",

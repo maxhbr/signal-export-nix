@@ -4,12 +4,13 @@ import json
 import shutil
 import subprocess
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from typing import Optional
 
 from typer import Argument, Exit, Option, colors, run, secho
 
-from sigexport import __version__, create, files, html, logging, merge, utils
+from sigexport import __version__, create, files, html, logging, merge, models, utils
 from sigexport.logging import log
 
 DATA_DELIM = "-----DATA-----"
@@ -38,9 +39,6 @@ def main(
     ),
     include_empty: bool = Option(
         False, "--include-empty", help="Whether to include empty chats"
-    ),
-    manual: bool = Option(
-        False, "--manual", "-m", help="Attempt to manually decrypt DB"
     ),
     verbose: bool = Option(False, "--verbose", "-v"),
     use_docker: bool = Option(
@@ -76,13 +74,6 @@ def main(
 
     log(f"Fetching data from {db_file}\n")
 
-    if not use_docker:
-        try:
-            from pysqlcipher3 import dbapi2 as _  # type: ignore[import] # noqa
-        except Exception:
-            secho("You set 'no-use-docker' but `pysqlcipher3` not installed properly")
-            sys.exit(1)
-
     if use_docker:
         if not docker_image:
             docker_version = __version__.split(".dev")[0]
@@ -100,8 +91,6 @@ def main(
             "--no-use-docker",
             "--print-data",
         ]
-        if manual:
-            cmd.append("--manual")
         if chats:
             cmd.append(f"--chats={chats}")
         if include_empty:
@@ -138,7 +127,17 @@ def main(
             secho(p.stderr, fg=colors.RED)
             raise Exit(1)
         try:
-            convos, contacts = data["convos"], data["contacts"]
+            convos_dict = data["convos"]
+            contacts_dict = data["contacts"]
+
+            convos: models.Convos = {}
+            for k, cs in convos_dict.items():
+                convos[k] = [models.RawMessage(**c) for c in cs]
+
+            contacts: models.Contacts = {}
+            for k, v in contacts_dict.items():
+                contacts[k] = models.Contact(**v)
+
         except (KeyError, TypeError):
             secho(
                 "Unable to extract convos and contacts from Docker, see data below",
@@ -147,23 +146,28 @@ def main(
             secho(data)
             raise Exit(1)
     else:
-        from sigexport.data import fetch_data
+        try:
+            from sigexport.data import fetch_data
 
-        convos, contacts = fetch_data(
-            db_file,
-            key,
-            manual=manual,
-            chats=chats,
-            include_empty=include_empty,
-        )
+            convos, contacts = fetch_data(
+                db_file,
+                key,
+                chats=chats,
+                include_empty=include_empty,
+            )
 
-    if print_data:
-        data = {"convos": convos, "contacts": contacts}
-        print(DATA_DELIM, json.dumps(data), DATA_DELIM)
-        raise Exit()
+            if print_data:
+                convos_dict = {k: [asdict(c) for c in cs] for k, cs in convos.items()}
+                contacts_dict = {k: asdict(v) for k, v in contacts.items()}
+                data = {"convos": convos_dict, "contacts": contacts_dict}
+                print(DATA_DELIM, json.dumps(data), DATA_DELIM)
+                raise Exit()
+        except Exception:
+            secho("You set 'no-use-docker' but `pysqlcipher3` not installed properly")
+            sys.exit(1)
 
     if list_chats:
-        names = sorted(v["name"] for v in contacts.values() if v["name"] is not None)
+        names = sorted(v.name for v in contacts.values() if v.name is not None)
         secho(" | ".join(names))
         raise Exit()
 
@@ -199,13 +203,14 @@ def main(
     if old:
         secho(f"Merging old at {old} into output directory")
         secho("No existing files will be deleted or overwritten!")
-        chat_dict = merge.merge_with_old(chat_dict, dest, Path(old))
+        chat_dict = merge.merge_with_old(chat_dict, contacts, dest, Path(old))
 
     if paginate <= 0:
         paginate = int(1e20)
 
     html.prep_html(dest)
-    for name, messages in chat_dict.items():
+    for key, messages in chat_dict.items():
+        name = contacts[key].name
         md_path = dest / name / "chat.md"
         js_path = dest / name / "data.json"
         ht_path = dest / name / "index.html"
