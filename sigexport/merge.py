@@ -1,3 +1,4 @@
+import re
 import shutil
 from pathlib import Path
 
@@ -5,12 +6,28 @@ from sigexport import files, models, utils
 from sigexport.logging import log
 
 
+def lines_to_msgs(lines: list[str]) -> list[models.MergeMessage]:
+    """Extract messages from lines of Markdown."""
+    p = re.compile(r"^\[(\d{4}-\d{2}-\d{2},{0,1} \d{2}:\d{2})\] (.*?): (.*\n)")
+    msgs: list[models.MergeMessage] = []
+    for li in lines:
+        m = p.match(li)
+        if m:
+            date_str, sender, body = m.groups()
+            date = utils.parse_datetime(date_str)
+            msg = models.MergeMessage(date=date, sender=sender, body=body)
+            msgs.append(msg)
+        else:
+            msgs[-1].body += li
+    return msgs
+
+
 def merge_chat(new: list[models.Message], path_old: Path) -> list[models.Message]:
     """Merge new and old chat markdowns."""
     with path_old.open(encoding="utf-8") as f:
         old_raw = f.readlines()
 
-    old = utils.lines_to_msgs(old_raw)
+    old = lines_to_msgs(old_raw)
     old_msgs = [o.to_message() for o in old]
 
     try:
@@ -48,12 +65,12 @@ def merge_with_old(
                 try:
                     path_old = dir_old / "chat.md"
                     msgs_new = merge_chat(msgs, path_old)
-                    new_chat_dict[name] = msgs_new
+                    new_chat_dict[key] = msgs_new
                 except FileNotFoundError:
                     try:
                         path_old = dir_old / "index.md"  # old name
                         msgs_new = merge_chat(msgs, path_old)
-                        new_chat_dict[name] = msgs_new
+                        new_chat_dict[key] = msgs_new
                     except FileNotFoundError:
                         log(f"\tNo old for {name}")
             else:

@@ -1,4 +1,3 @@
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -18,22 +17,6 @@ def parse_datetime(input_str: str) -> datetime:
         return datetime.strptime(input_str, "%Y-%m-%d %H:%M")
     except ValueError:
         return datetime.strptime(input_str, "%Y-%m-%d, %H:%M")
-
-
-def lines_to_msgs(lines: list[str]) -> list[models.MergeMessage]:
-    """Extract messages from lines of Markdown."""
-    p = re.compile(r"^\[(\d{4}-\d{2}-\d{2},{0,1} \d{2}:\d{2})\](.*?:)(.*\n)")
-    msgs: list[models.MergeMessage] = []
-    for li in lines:
-        m = p.match(li)
-        if m:
-            date_str, sender, body = m.groups()
-            date = parse_datetime(date_str)
-            msg = models.MergeMessage(date=date, sender=sender, body=body)
-            msgs.append(msg)
-        else:
-            msgs[-1].body += li
-    return msgs
 
 
 def version_callback(value: bool) -> None:

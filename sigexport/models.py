@@ -147,7 +147,7 @@ class MergeMessage:
             reactions = [Reaction(*r.split(":")) for r in m_reactions[0].split(", ")]
         body = re.sub(p_reactions, "", body)
 
-        p_stickers = r"\n(\(\( (.*) ))"
+        p_stickers = r"\n\(\( (.*) \)\)"
         stickers = re.findall(p_stickers, self.body)
         sticker = stickers[0] if stickers else ""
         body = re.sub(p_stickers, "", body)
