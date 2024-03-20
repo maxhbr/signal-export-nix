@@ -64,7 +64,7 @@ def create_html(
         reactions = " ".join(f"{r.name}: {r.emoji}" for r in msg.reactions)
         quote = ""
         if msg.quote:
-            quote = f"<div class=quote>{msg.quote.replace(">", "")}</div>"
+            quote = f"<div class=quote>{msg.quote.replace('>', '')}</div>"
 
         body = msg.body
         try:
