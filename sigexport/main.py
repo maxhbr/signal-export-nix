@@ -212,7 +212,7 @@ def main(
         paginate = int(1e20)
 
     if html_output:
-        html_.prep_html(dest)
+        html.prep_html(dest)
     for key, messages in chat_dict.items():
         name = contacts[key].name
         # some contact names are None
@@ -233,12 +233,14 @@ def main(
                 print(msg.to_md(), file=md_f)
                 print(msg.dict_str(), file=js_f)
             if html_output:
-                ht = html_.create_html(name=name, messages=messages, msgs_per_page=paginate)
+                ht = html.create_html(
+                    name=name, messages=messages, msgs_per_page=paginate
+                )
                 print(ht, file=ht_f)
         finally:
             md_f.close()
             js_f.close()
-            if html_output:
+            if ht_f:
                 ht_f.close()
 
     secho("Done!", fg=colors.GREEN)
