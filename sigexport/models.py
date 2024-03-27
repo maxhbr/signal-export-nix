@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import re
 from collections import namedtuple
@@ -30,7 +32,7 @@ class RawMessage:
     sticker: dict[str, Any] | None
     quote: dict[str, Any] | None
 
-    def get_ts(self: "RawMessage") -> int:
+    def get_ts(self: RawMessage) -> int:
         if self.sent_at:
             return self.sent_at
         elif self.timestamp:
@@ -97,7 +99,7 @@ class Message:
     reactions: list[Reaction]
     attachments: list[Attachment]
 
-    def to_md(self: "Message") -> str:
+    def to_md(self: Message) -> str:
         date_str = self.date.strftime("%Y-%m-%d %H:%M:%S")
         body = self.body
 
@@ -115,16 +117,16 @@ class Message:
 
         return f"[{date_str}] {self.sender}: {self.quote}{body}\n"
 
-    def comp(self: "Message") -> tuple[datetime, str, str]:
+    def comp(self: Message) -> tuple[datetime, str, str]:
         date = self.date.replace(second=0, microsecond=0)
         return (date, self.sender, self.body.replace("\n", "").replace(">", ""))
 
-    def dict(self: "Message") -> dict:
+    def dict(self: Message) -> dict:
         msg_dict = asdict(self)
         msg_dict["date"] = msg_dict["date"].isoformat()
         return msg_dict
 
-    def dict_str(self: "Message") -> str:
+    def dict_str(self: Message) -> str:
         return json.dumps(self.dict(), ensure_ascii=False)
 
 
@@ -137,7 +139,7 @@ class MergeMessage:
     sender: str
     body: str
 
-    def to_message(self: "MergeMessage") -> Message:
+    def to_message(self: MergeMessage) -> Message:
         body = self.body
 
         p_reactions = re.compile(r"\n\(- (.*) -\)")

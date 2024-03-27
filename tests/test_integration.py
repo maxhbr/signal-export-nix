@@ -134,7 +134,7 @@ def test_integration():
         source=source,
         old=None,
         paginate=100,
-        chats=None,
+        chats="",
         list_chats=False,
         include_empty=False,
         verbose=True,

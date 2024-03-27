@@ -12,13 +12,13 @@ from sigexport.logging import log
 def fetch_data(
     db_file: Path,
     key: str,
-    chats: str | None = None,
-    include_empty: bool = False,
+    chats: str,
+    include_empty: bool,
 ) -> tuple[models.Convos, models.Contacts]:
     """Load SQLite data into dicts."""
     contacts: models.Contacts = {}
     convos: models.Convos = {}
-    chats_list = chats.split(",") if chats else []
+    chats_list = chats.split(",") if len(chats) > 0 else []
 
     db = sqlcipher.connect(str(db_file))  # type: ignore
     c = db.cursor()

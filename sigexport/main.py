@@ -28,8 +28,8 @@ def main(
     paginate: int = Option(
         100, "--paginate", "-p", help="Messages per page in HTML; set to 0 for infinite"
     ),
-    chats: OptionalStr = Option(
-        None, help="Comma-separated chat names to include: contact names or group names"
+    chats: str = Option(
+        "", help="Comma-separated chat names to include: contact names or group names"
     ),
     json_output: bool = Option(
         False, "--json/--no-json", "-j", help="Whether to create JSON output"
