@@ -20,32 +20,86 @@ Images are attached inline with `![name](path)` while other attachments (voice n
 
 This is converted to HTML at the end so it can be opened with any web browser. The stylesheet `.css` is still very basic but I'll get to it sooner or later.
 
-## 🚀 Installation with Docker
-This tool has some pretty difficult dependencies, so it's easier to get some help from Docker.
-For most people this will probably be the easiest way.
-It requires installing Docker and then pulling a [200MB image](https://hub.docker.com/r/carderne/sigexport), so avoid this if data use is a concern.
+## 🪟 Installation: Windows
+In order to use this tool, you'll need to install WSL2, Docker and Python.
+The steps to do this are below.
+(**NB:** Improvements to these instructions are welcome.)
 
-First off, [install Docker](https://docs.docker.com/get-docker/) (including following the [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) for managing Docker as a non-root user).  
-And make sure you have Python installed.
+1. Enable Windows WSL2 feature
+2. Install [Docker Desktop](https://docs.docker.com/get-docker/) with the WSL2 backend
+3. Install Python 3.12 via Windows Store
+4. In a PowerShell terminal, run
+```bash
+pip install signal-export
+```
+5. Run the script like this (you can enter any directory, it will be created)
+```bash
+sigexport C:\Temp\SignalExport
+```
+Run it without any arguments to get instructions about other options
+```bash
+sigexport
+```
 
-Then install this package:
+**NB** You may get an error like `term 'sigexport' is not recognized`, in which case you can use the following:
+```bash
+python -m sigexport.main ~/signal-chats
+```
+
+## 🐧 Installation: Linux
+1. [Install Docker](https://docs.docker.com/get-docker/) (including following the [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) for managing Docker as a non-root user).  
+2. Make sure you have Python installed.
+
+3. Install this package:
 ```bash
 pip install signal-export
 ```
 
-Then run the script!
-It will do some Docker stuff under the hood to get your data out of the encrypted database.
+4. Then run the script! It will do some Docker stuff under the hood to get your data out of the encrypted database.
 ```bash
 sigexport ~/signal-chats
 # output will be saved to the supplied directory
 ```
 
-**NB** On Windows/PowerShell, you may get an error like `term 'sigexport' is not recognized`, in which case you can use the following:
+### Linux without Docker
+1. Install the required libraries.
 ```bash
-python -m sigexport.main ~/signal-chats
+sudo apt install libsqlite3-dev tclsh libssl-dev
 ```
 
-## Usage
+2. Then clone [sqlcipher](https://github.com/sqlcipher/sqlcipher) and install it:
+```bash
+git clone https://github.com/sqlcipher/sqlcipher.git
+cd sqlcipher
+./configure --enable-tempstore=yes CFLAGS="-DSQLITE_HAS_CODEC" LDFLAGS="-lcrypto -lsqlite3"
+make && sudo make install
+```
+
+3. Then you can install and run signal-export without Docker:
+```bash
+pip install 'signal-export[sql]'
+sigexport --no-use-docker ...
+```
+
+## 🍏 Installation: macOS
+To use it with Docker, just follow the standard Linux instructions above.
+
+### macOS without Docker
+1. Install [Homebrew](https://brew.sh).
+2. Run `brew install openssl sqlcipher`
+3. Export some needed env vars:
+```bash
+export C_INCLUDE_PATH="$(brew --prefix sqlcipher)/include"
+export LIBRARY_PATH="${brew --prefix sqlcipher)/lib"
+```
+
+4. Then you can install and run signal-export without Docker:
+```bash
+pip install 'signal-export[sql]'
+sigexport --no-use-docker ...
+```
+
+## 🚀 Usage
 Please fully exit your Signal app before proceeding, otherwise you will likely encounter an `I/O disk` error, due to the message database being made read-only, as it was being accessed by the app.
 
 See the full help info:
@@ -109,79 +163,7 @@ docker run --rm \
     --chats Jim                   # this line isn't
 ```
 
-## 🗻 BYOD (Build-Your-Own-Docker) image
-Running this script using the methods above requires you to trust that I haven't snuck anything into the Docker image.
-You can inspect the code in this repo, and after `pip install`ing, you can confirm that the code installed on your computer matches this repo.
-But the methods above rely on the [Docker image](https://hub.docker.com/r/carderne/sigexport), which is a bit more complex.
-
-You can check the [Dockerfile](./Dockerfile) in this repo, and the [GitHub Actions workflow](./.github/workflows/cicd.yaml).
-You can check that the last [Actions run](https://github.com/carderne/signal-export/actions) matches the time on the last push to the DockerHub registry.
-But you can't guarantee that I didn't sneak something in, so the next thing is to check the image itself.
-
-So you can run `docker inspect carderne/sigexport` and check the `Entrypoint` and `Cmd` values.
-Then you can run `docker run --rm -it --entrypoint='' carderne/sigexport bash` and check what Entrypoint/Cmd values correspond to inside the container, and check that _that_ matches the repo!
-
-You can also just build your own Docker image from this repo:
-```bash
-git clone https://github.com/carderne/signal-export.git
-cd signal-export
-docker build -t yourname/sigexport .
-```
-
-And _then_ run the Python script, but tell it to use the image you just created:
-```bash
-sigexport --docker-image yourname/sigexport outputdir/
-```
-
-## 🌋 No-Docker install
-This is hard mode, and involves installing more stuff.
-Probably easy on macOS, slightly involved on Linux, and impossible on Windows.
-
-Before you can install `signal-export`, you need to get `sqlcipher` working.
-Follow the instructions for your OS:
-
-### Ubuntu (other distros can adapt to their package manager)
-Install the required libraries.
-```bash
-sudo apt install libsqlite3-dev tclsh libssl-dev
-```
-
-Then clone [sqlcipher](https://github.com/sqlcipher/sqlcipher) and install it:
-```bash
-git clone https://github.com/sqlcipher/sqlcipher.git
-cd sqlcipher
-./configure --enable-tempstore=yes CFLAGS="-DSQLITE_HAS_CODEC" LDFLAGS="-lcrypto -lsqlite3"
-make && sudo make install
-```
-
-### macOS
-1. Install [Homebrew](https://brew.sh).
-2. Run `brew install openssl sqlcipher`
-3. Export some needed env vars:
-```bash
-export C_INCLUDE_PATH="$(brew --prefix sqlcipher)/include"
-export LIBRARy_PATH="${brew --prefix sqlcipher)/lib"
-```
-
-### Windows
-Ubuntu on WSL2 should work!
-That is, install WSL2 and Ubuntu on Windows, and then follow the **For Linux** instructions and feel your way forward.
-But probably just give up here and use the Docker method instead.
-
-### Install signal-export
-Then you're ready to install signal-export:
-(Note the `[sql]` that has been added!)
-```bash
-pip install 'signal-export[sql]'
-```
-
 Then you should be able to use the [Usage instructions](#usage) as above.
-
-## Uninstall
-```bash
-docker system prune
-pip uninstall signal-export
-```
 
 ## Development
 ```bash
