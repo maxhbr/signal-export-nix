@@ -21,6 +21,8 @@ Images are attached inline with `![name](path)` while other attachments (voice n
 This is converted to HTML at the end so it can be opened with any web browser. The stylesheet `.css` is still very basic but I'll get to it sooner or later.
 
 ## 🪟 Installation: Windows
+<!-- If you need step-by-step instructions on things like enabling WSL2, please see the dedicated [Windows Installation](./INSTALLATION.md) instructions. -->
+
 In order to use this tool, you'll need to install WSL2, Docker and Python.
 The steps to do this are below.
 (**NB:** Improvements to these instructions are welcome.)
