@@ -1,12 +1,15 @@
 import sys
 from datetime import datetime
+from importlib.metadata import version
 from pathlib import Path
 from typing import cast
 
 import emoji
 from typer import Exit, secho
 
-from sigexport import __version__, models
+from sigexport import models
+
+VERSION = version("signal-export")
 
 
 def dt_from_ts(ts: float) -> datetime:
@@ -32,7 +35,7 @@ def parse_datetime(input_str: str) -> datetime:
 def version_callback(value: bool) -> None:
     """Get sigexport version."""
     if value:
-        print(f"v{__version__}")
+        print(f"v{VERSION}")
         raise Exit()
 
 

@@ -10,7 +10,7 @@ from typing import Optional
 
 from typer import Argument, Exit, Option, colors, run, secho
 
-from sigexport import __version__, create, files, html, logging, merge, models, utils
+from sigexport import create, files, html, logging, merge, models, utils
 from sigexport.logging import log
 
 DATA_DELIM = "-----DATA-----"
@@ -79,7 +79,7 @@ def main(
 
     if use_docker:
         if not docker_image:
-            docker_version = __version__.split(".dev")[0]
+            docker_version = utils.VERSION.split(".dev")[0]
             docker_image = f"carderne/sigexport:v{docker_version}"
         secho(
             "Using Docker to extract data, this may take a while the first time!",
