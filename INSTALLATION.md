@@ -6,7 +6,7 @@
 - Docker Desktop needs the Windows feature WSL2 (Windows Subsystem for Linux) to work.
 
 ### Steps
-1. Installation of Windows WSL2
+#### 1. Installation of Windows WSL2
 - Go to the Start menu and search for "Turn Windows features on or off".
 - Select "Windows Subsystem for Linux" and click OK.
 - Open a PowerShell prompt and install WSL2 with:
@@ -14,24 +14,24 @@
 wsl --install
 ```
 
-2. Install Docker Desktop
+#### 2. Install Docker Desktop
 - Download [Docker Desktop from here](https://docs.docker.com/get-docker/)
 - Run the Docker setup file
 - Select the option "Use WSL 2 instead of Hyper-V (recommended)"
 
-3. Install Python
+#### 3. Install Python
 - Go to the Start menu and open the Microsoft Store
 - In the Microsoft Store, search for "Python"
 - Click on "Python 3.12" (or later) and then "Get"
 	
-4. Download the Python executable "sigexport.exe"
+#### 4. Install signal-export
 - Open a PowerShell prompt
 - Download the package from the online repository with:
 ```powershell
 pip install --user signal-export
 ```
 
-5. Run the executable to extract chat history
+#### 5. Run the executable to extract chat history
 - Run the command below, the target directory will be automatically created:
 ```powershell
 python -m sigexport C:\Temp\MySignalExport
