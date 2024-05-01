@@ -76,7 +76,7 @@ def create_message(
             quote = msg.quote["text"].rstrip("\n")
             quote = quote.replace("\n", "\n> ")
             quote = f"\n\n> {quote}\n\n"
-        except (KeyError, TypeError):
+        except (AttributeError, KeyError, TypeError):
             pass
 
     return models.Message(
