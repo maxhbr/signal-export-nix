@@ -92,7 +92,7 @@ To use it with Docker, just follow the standard Linux instructions above.
 3. Export some needed env vars:
 ```bash
 export C_INCLUDE_PATH="$(brew --prefix sqlcipher)/include"
-export LIBRARY_PATH="${brew --prefix sqlcipher)/lib"
+export LIBRARY_PATH="$(brew --prefix sqlcipher)/lib"
 ```
 
 4. Then you can install and run signal-export without Docker:
