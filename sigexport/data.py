@@ -69,6 +69,7 @@ def fetch_data(
                 source=res.get("source"),
                 timestamp=res.get("timestamp"),
                 sent_at=res.get("sent_at"),
+                server_timestamp=res.get("serverTimestamp"),
                 has_attachments=res.get("has_attachments", False),
                 attachments=res.get("attachments", []),
                 read_status=res.get("read_status"),
