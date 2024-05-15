@@ -35,7 +35,7 @@ def main(
         False, "--json/--no-json", "-j", help="Whether to create JSON output"
     ),
     html_output: bool = Option(
-        False, "--html/--no-html", "-j", help="Whether to create HTML output"
+        False, "--html/--no-html", "-h", help="Whether to create HTML output"
     ),
     list_chats: bool = Option(
         False, "--list-chats", "-l", help="List available chats and exit"
