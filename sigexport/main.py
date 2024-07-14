@@ -167,7 +167,7 @@ def main(
                 data = {"convos": convos_dict, "contacts": contacts_dict}
                 print(DATA_DELIM, json.dumps(data), DATA_DELIM)
                 raise Exit()
-        except Exception:
+        except (ImportError, ModuleNotFoundError):
             secho("You set 'no-use-docker' but `pysqlcipher3` not installed properly")
             sys.exit(1)
 
