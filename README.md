@@ -109,9 +109,9 @@ See the full help info:
 sigexport --help
 ```
 
-Disable pagination on HTML, and overwrite anything at the destination:
+Disable pagination on HTML:
 ```bash
-sigexport --paginate=0 --overwrite ~/signal-chats
+sigexport --paginate=0 ~/signal-chats
 ```
 
 List available chats and exit:

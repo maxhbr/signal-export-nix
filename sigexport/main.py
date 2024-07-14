@@ -43,6 +43,11 @@ def main(
     include_empty: bool = Option(
         False, "--include-empty", help="Whether to include empty chats"
     ),
+    overwrite: bool = Option(
+        False,
+        "--overwrite/--no-overwrite",
+        help="Overwrite contents of output directory if it exists",
+    ),
     verbose: bool = Option(False, "--verbose", "-v"),
     use_docker: bool = Option(
         True, help="Use Docker container for SQLCipher extraction"
@@ -179,7 +184,7 @@ def main(
     dest = Path(dest).expanduser()
     if not dest.is_dir():
         dest.mkdir(parents=True, exist_ok=True)
-    else:
+    elif not overwrite:
         secho(
             f"Output folder '{dest}' already exists, didn't do anything!", fg=colors.RED
         )
