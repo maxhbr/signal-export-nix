@@ -23,7 +23,7 @@ OptionalStr = Optional[str]
 
 def main(
     dest: Path = Argument(None),
-    source: OptionalPath = Option(None, help="Path to Signal source database"),
+    source: OptionalPath = Option(None, help="Path to Signal source directory"),
     old: OptionalPath = Option(None, help="Path to previous export to merge"),
     paginate: int = Option(
         100, "--paginate", "-p", help="Messages per page in HTML; set to 0 for infinite"
@@ -66,21 +66,12 @@ def main(
         raise Exit(code=1)
 
     if source:
-        src = Path(source).expanduser().absolute()
+        source_dir = Path(source).expanduser().absolute()
     else:
-        src = utils.source_location()
-    source = src / "config.json"
-    db_file = src / "sql" / "db.sqlite"
-
-    # Read sqlcipher key from Signal config file
-    if source.is_file():
-        with open(source, encoding="utf-8") as conf:
-            key = json.loads(conf.read())["key"]
-    else:
-        secho(f"Error: {source} not found in directory {src}")
+        source_dir = utils.source_location()
+    if not (source_dir / "config.json").is_file():
+        secho(f"Error: config.json not found in directory {source_dir}")
         raise Exit(code=1)
-
-    log(f"Fetching data from {db_file}\n")
 
     if use_docker:
         if not docker_image:
@@ -94,7 +85,7 @@ def main(
             "docker",
             "run",
             "--rm",
-            f"--volume={src}:/Signal",
+            f"--volume={source_dir}:/Signal",
             docker_image,
             "--no-use-docker",
             "--print-data",
@@ -160,8 +151,7 @@ def main(
             from sigexport.data import fetch_data
 
             convos, contacts = fetch_data(
-                db_file,
-                key,
+                source_dir,
                 chats=chats,
                 include_empty=include_empty,
             )
@@ -193,7 +183,7 @@ def main(
     contacts = utils.fix_names(contacts)
 
     secho("Copying and renaming attachments")
-    for att_src, att_dst in files.copy_attachments(src, dest, convos, contacts):
+    for att_src, att_dst in files.copy_attachments(source_dir, dest, convos, contacts):
         try:
             shutil.copy2(att_src, att_dst)
         except FileNotFoundError:
