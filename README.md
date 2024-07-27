@@ -2,6 +2,8 @@
 [![cicd](https://github.com/carderne/signal-export/actions/workflows/cicd.yml/badge.svg)](https://github.com/carderne/signal-export/actions/workflows/cicd.yml)
 [![PyPI version](https://badge.fury.io/py/signal-export.svg)](https://pypi.org/project/signal-export/)
 
+**⚠️ WARNING: Because Signal Desktop has finally decided to protect the database encryption key, this tool currently won't work with the latest versions of Signal Desktop. It may be a while (or never) before it works again. I will share links to alternatives if I become aware of them. Discussion happening in [this thread](https://github.com/carderne/signal-export/issues/133).**
+
 Export chats from the [Signal](https://www.signal.org/) [Desktop app](https://www.signal.org/download/) to Markdown and HTML files with attachments. Each chat is exported as an individual .md/.html file and the attachments for each are stored in a separate folder. Attachments are linked from the Markdown files and displayed in the HTML (pictures, videos, voice notes).
 
 Currently this seems to be the only way to get chat history out of Signal!
