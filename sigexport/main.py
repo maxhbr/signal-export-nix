@@ -174,7 +174,10 @@ def main(
     dest = Path(dest).expanduser()
     if not dest.is_dir():
         dest.mkdir(parents=True, exist_ok=True)
-    elif not overwrite:
+    elif overwrite:
+        shutil.rmtree(dest)
+        dest.mkdir(parents=True, exist_ok=True)
+    else:
         secho(
             f"Output folder '{dest}' already exists, didn't do anything!", fg=colors.RED
         )
