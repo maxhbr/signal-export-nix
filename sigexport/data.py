@@ -4,20 +4,9 @@ import json
 from pathlib import Path
 
 from pysqlcipher3 import dbapi2 as sqlcipher
-from typer import Exit
 
-from sigexport import models
+from sigexport import crypto, models
 from sigexport.logging import log
-
-
-def get_key(file: Path) -> str:
-    with open(file, encoding="utf-8") as f:
-        data = json.loads(f.read())
-    if "key" in data:
-        return data["key"]
-    elif "encryptedKey" in data:
-        return data["encryptedKey"]
-    raise Exit(1)
 
 
 def fetch_data(
@@ -30,7 +19,7 @@ def fetch_data(
     signal_config = source_dir / "config.json"
 
     log(f"Fetching data from {db_file}\n")
-    key = get_key(signal_config)
+    key = crypto.get_key(signal_config)
 
     contacts: models.Contacts = {}
     convos: models.Convos = {}

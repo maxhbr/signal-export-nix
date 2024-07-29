@@ -24,6 +24,8 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
+pycryptodome==3.20.0
+    # via signal-export
 pygments==2.17.2
     # via rich
 pysqlcipher3==1.2.0

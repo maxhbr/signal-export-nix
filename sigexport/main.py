@@ -97,7 +97,7 @@ def main(
         if verbose:
             cmd.append("--verbose")
         try:
-            p = subprocess.run(
+            p = subprocess.run(  # NoQA: S603
                 cmd,  # NoQA: S603
                 capture_output=True,
                 text=True,
@@ -163,7 +163,7 @@ def main(
                 print(DATA_DELIM, json.dumps(data), DATA_DELIM)
                 raise Exit()
         except (ImportError, ModuleNotFoundError):
-            secho("You set 'no-use-docker' but `pysqlcipher3` not installed properly")
+            secho("You set '--no-use-docker' but `pysqlcipher3` not installed properly")
             sys.exit(1)
 
     if list_chats:

@@ -69,6 +69,8 @@ platformdirs==4.2.0
 pluggy==1.4.0
     # via pytest
 pre-commit==3.6.2
+pycryptodome==3.20.0
+    # via signal-export
 pygments==2.17.2
     # via readme-renderer
     # via rich
