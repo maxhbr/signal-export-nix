@@ -1,8 +1,12 @@
 [tool.rye.scripts]
-check = "pyright"
 build = "docker build --tag=carderne/sigexport:dev ."
-test = "pytest"
 sig = "sigexport"
+
+fmt = "rye fmt"
+lint = "rye lint --fix"
+check = "pyright"
+test = "pytest"
+all = { chain = ["fmt", "lint", "check", "test"] }
 
 [project]
 name = "signal-export"
@@ -34,6 +38,7 @@ dependencies = [
 
 [tool.rye]
 managed = true
+generate-hashes = false
 dev-dependencies = [
     "build",
     "pyright",
