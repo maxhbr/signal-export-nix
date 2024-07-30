@@ -2,8 +2,10 @@
 
 import json
 from pathlib import Path
+from typing import Optional
 
 from pysqlcipher3 import dbapi2 as sqlcipher
+from typer import Exit, colors, secho
 
 from sigexport import crypto, models
 from sigexport.logging import log
@@ -11,6 +13,7 @@ from sigexport.logging import log
 
 def fetch_data(
     source_dir: Path,
+    password: Optional[str],
     chats: str,
     include_empty: bool,
 ) -> tuple[models.Convos, models.Contacts]:
@@ -18,9 +21,13 @@ def fetch_data(
     db_file = source_dir / "sql" / "db.sqlite"
     signal_config = source_dir / "config.json"
 
-    log(f"Fetching data from {db_file}\n")
-    key = crypto.get_key(signal_config)
+    try:
+        key = crypto.get_key(signal_config, password)
+    except Exception:
+        secho("Failed to decrypt Signal password", fg=colors.RED)
+        raise Exit(1)
 
+    log(f"Fetching data from {db_file}\n")
     contacts: models.Contacts = {}
     convos: models.Convos = {}
     chats_list = chats.split(",") if len(chats) > 0 else []

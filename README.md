@@ -2,8 +2,8 @@
 [![cicd](https://github.com/carderne/signal-export/actions/workflows/cicd.yml/badge.svg)](https://github.com/carderne/signal-export/actions/workflows/cicd.yml)
 [![PyPI version](https://badge.fury.io/py/signal-export.svg)](https://pypi.org/project/signal-export/)
 
-**⚠️ WARNING: Because the latest versions of Signal Desktop protect the database encryption key, this tool currently only works on macOS.
-Solutions for Linux and Windows will hopefully come soon from the community.
+**⚠️ WARNING: Because the latest versions of Signal Desktop protect the database encryption key, this tool currently only works on macOS and Linux.
+Solutions for Windows will hopefully come soon from the community.
 Discussion happening in [this thread](https://github.com/carderne/signal-export/issues/133).**
 
 Export chats from the [Signal](https://www.signal.org/) [Desktop app](https://www.signal.org/download/) to Markdown and HTML files with attachments. Each chat is exported as an individual .md/.html file and the attachments for each are stored in a separate folder. Attachments are linked from the Markdown files and displayed in the HTML (pictures, videos, voice notes).
