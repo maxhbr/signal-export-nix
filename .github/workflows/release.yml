@@ -83,12 +83,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v4
+      with:
+        merge-multiple: true
 
     - name: Copy artifacts to dist/ folder
       run: |
         mkdir -p dist/
-        find . -name '*.tar.gz' -exec mv '{}' dist/ \;
-        find . -name '*.whl' -exec mv '{}' dist/ \;
+        mv *.tar.gz dist/
+        mv *.whl dist/
 
     - name: Upload
       uses: pypa/gh-action-pypi-publish@v1.4.2
