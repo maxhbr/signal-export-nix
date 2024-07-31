@@ -33,6 +33,7 @@ jobs:
           cd pysqlcipher3
           python setup.py build_amalgamation
           python setup.py build
+          echo 'PLATFORM_TAG="manylinux2014_x86_64"' >> $GITHUB_ENV
 
       - name: build pysqlcipher3 macOS
         if: matrix.os == 'macos-latest'
@@ -43,6 +44,7 @@ jobs:
           cd pysqlcipher3
           python setup.py build_amalgamation
           python setup.py build
+          echo 'PLATFORM_TAG="macosx_10_9_universal2"' >> $GITHUB_ENV
 
       - name: post-build pysqlcipher3
         run: |
@@ -53,9 +55,8 @@ jobs:
         run: |
           pip install build
           python -m build
-          PLATFORM_TAG=$(python -c 'import sysconfig; print(sysconfig.get_platform().replace("-", "_").replace(".", "_"))')
           cd dist
-          NEW_NAME=$(ls *.whl | sed "s/any.whl$/${PLATFORM_TAG}.whl/")
+          NEW_NAME=$(ls *.whl | sed "s/any.whl$/${{ env.PLATFORM_TAG }}.whl/")
           mv *.whl $NEW_NAME
           echo "WHEEL_NAME=$(ls *.whl)" >> $GITHUB_ENV
           echo "SDIST_NAME=$(ls *.tar.gz)" >> $GITHUB_ENV
@@ -83,12 +84,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v4
+      with:
+        merge-multiple: true
 
     - name: Copy artifacts to dist/ folder
       run: |
         mkdir -p dist/
-        find . -name '*.tar.gz' -exec mv '{}' dist/ \;
-        find . -name '*.whl' -exec mv '{}' dist/ \;
+        mv *.tar.gz dist/
+        mv *.whl dist/
 
     - name: Upload
       uses: pypa/gh-action-pypi-publish@v1.4.2
