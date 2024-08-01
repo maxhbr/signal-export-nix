@@ -130,6 +130,7 @@ def test_integration():
     source = root / "data"
 
     main(
+        None,  # type: ignore
         dest=dest,
         source=source,
         old=None,
@@ -138,9 +139,6 @@ def test_integration():
         list_chats=False,
         include_empty=False,
         verbose=True,
-        use_docker=False,
-        docker_image="",
-        print_data=False,
     )
 
     output_test = dest / "Test"
