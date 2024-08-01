@@ -12,23 +12,14 @@
 -e file:.
 beautifulsoup4==4.12.3
     # via signal-export
-build==1.2.1
-cfgv==3.4.0
-    # via pre-commit
 click==8.1.7
     # via typer
 colorama==0.4.6
     # via typer
 coverage==7.4.4
     # via pytest-cov
-distlib==0.3.8
-    # via virtualenv
 emoji==2.10.1
     # via signal-export
-filelock==3.13.1
-    # via virtualenv
-identify==2.5.35
-    # via pre-commit
 iniconfig==2.0.0
     # via pytest
 markdown==3.6
@@ -38,35 +29,25 @@ markdown-it-py==3.0.0
 mdurl==0.1.2
     # via markdown-it-py
 nodeenv==1.8.0
-    # via pre-commit
     # via pyright
 packaging==24.0
-    # via build
     # via pytest
-    # via setuptools-scm
-platformdirs==4.2.0
-    # via virtualenv
 pluggy==1.4.0
     # via pytest
-pre-commit==3.6.2
 pycryptodome==3.20.0
     # via signal-export
 pygments==2.17.2
     # via rich
-pyproject-hooks==1.1.0
-    # via build
 pyright==1.1.354
+pysqlcipher3static==2.0.0
+    # via signal-export
 pytest==8.1.1
     # via pytest-cov
 pytest-cov==4.1.0
-pyyaml==6.0.1
-    # via pre-commit
 rich==13.7.1
     # via typer
 setuptools==69.2.0
     # via nodeenv
-    # via setuptools-scm
-setuptools-scm==8.1.0
 shellingham==1.5.4
     # via typer
 soupsieve==2.5
@@ -77,5 +58,3 @@ types-emoji==2.1.0.3
 types-markdown==3.6.0.20240316
 typing-extensions==4.10.0
     # via typer
-virtualenv==20.25.1
-    # via pre-commit

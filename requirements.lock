@@ -28,6 +28,8 @@ pycryptodome==3.20.0
     # via signal-export
 pygments==2.17.2
     # via rich
+pysqlcipher3static==2.0.0
+    # via signal-export
 rich==13.7.1
     # via typer
 shellingham==1.5.4

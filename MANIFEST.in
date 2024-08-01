@@ -1,3 +1,0 @@
-graft src
-
-global-exclude *.pyc
