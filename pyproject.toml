@@ -1,5 +1,4 @@
 [tool.rye.scripts]
-build = "docker build --tag=carderne/sigexport:dev ."
 sig = "sigexport"
 
 fmt = "rye fmt"
