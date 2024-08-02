@@ -28,14 +28,14 @@ pycryptodome==3.20.0
     # via signal-export
 pygments==2.17.2
     # via rich
-pysqlcipher3static==2.0.0
-    # via signal-export
 rich==13.7.1
     # via typer
 shellingham==1.5.4
     # via typer
 soupsieve==2.5
     # via beautifulsoup4
+sqlcipher3-wheels==0.5.2.post1
+    # via signal-export
 typer==0.9.0
     # via signal-export
 typing-extensions==4.10.0

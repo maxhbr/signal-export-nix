@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from pysqlcipher3 import dbapi2 as sqlcipher
+from sqlcipher3 import dbapi2
 from typer import Exit, colors, secho
 
 from sigexport import crypto, models
@@ -32,7 +32,7 @@ def fetch_data(
     convos: models.Convos = {}
     chats_list = chats.split(",") if len(chats) > 0 else []
 
-    db = sqlcipher.connect(str(db_file))  # type: ignore
+    db = dbapi2.connect(str(db_file))
     c = db.cursor()
     # param binding doesn't work for pragmas, so use a direct string concat
     c.execute(f"PRAGMA KEY = \"x'{key}'\"")
