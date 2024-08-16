@@ -97,13 +97,7 @@ def main(
     contacts = utils.fix_names(contacts)
 
     secho("Copying and renaming attachments")
-    for att_src, att_dst in files.copy_attachments(source_dir, dest, convos, contacts):
-        try:
-            shutil.copy2(att_src, att_dst)
-        except FileNotFoundError:
-            secho(f"No file to copy at {att_src}, skipping!", fg=colors.MAGENTA)
-        except OSError as exc:
-            secho(f"Error copying file {att_src}, skipping!\n{exc}", fg=colors.MAGENTA)
+    files.copy_attachments(source_dir, dest, convos, contacts)
 
     if json_output and old:
         secho(
