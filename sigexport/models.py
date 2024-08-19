@@ -152,7 +152,12 @@ class MergeMessage:
         m_reactions = re.findall(p_reactions, body)
         reactions = []
         if m_reactions:
-            reactions = [Reaction(*r.split(":")) for r in m_reactions[0].split(", ")]
+            for r in m_reactions[0].split(", "):
+                reac = r.split(":")
+                if len(reac) < 2:
+                    continue
+                name, emoji = reac
+                reactions.append(Reaction(name, emoji))
         body = re.sub(p_reactions, "", body)
 
         p_stickers = r"\n\(\( (.*) \)\)"
