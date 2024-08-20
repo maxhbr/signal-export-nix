@@ -34,7 +34,7 @@ shellingham==1.5.4
     # via typer
 soupsieve==2.5
     # via beautifulsoup4
-sqlcipher3-wheels==0.5.2.post1
+pysqlcipher3==1.2.0
     # via signal-export
 typer==0.9.0
     # via signal-export
