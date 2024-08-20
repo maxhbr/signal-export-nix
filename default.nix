@@ -2,7 +2,6 @@
 , python3
 , fetchFromGitHub
 , nix-update-script
-, sqlcipher3-wheels
 , ...
 }:
 python3.pkgs.buildPythonApplication rec {
@@ -11,14 +10,6 @@ python3.pkgs.buildPythonApplication rec {
   pyproject = true;
 
   src = ./.;
-
-  # postPatch = ''
-  #    substituteInPlace pyproject.toml \
-  #       --replace-fail '"sqlcipher3-wheels >= 0.5.2.post1"' '"pysqlcipher3 >= 1.2.0"'
-  #    substituteInPlace requirements.lock \
-  #       --replace-fail 'sqlcipher3-wheels==0.5.2.post1' 'pysqlcipher3==1.2.0'
-  # '';
-
 
   nativeBuildInputs = with python3.pkgs; [
     setuptools-scm

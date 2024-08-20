@@ -13,16 +13,11 @@
       };
       lib = pkgs.lib;
     in {
-      packages.${system} = rec {
-        sqlcipher3-wheels = 
-          with pkgs;
-          import ./sqlcipher3-wheels.nix 
-            { inherit lib python3 fetchPypi nix-update-script sqlcipher openssl conan;
-            };
+      packages.${system} = {
         signal-export = 
           with pkgs;
           import ./default.nix 
-            { inherit lib python3 fetchFromGitHub nix-update-script sqlcipher3-wheels;
+            { inherit lib python3 fetchFromGitHub nix-update-script;
             };
       };
       apps.${system} = {
