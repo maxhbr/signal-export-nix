@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from sqlcipher3 import dbapi2
+from pysqlcipher3 import dbapi2 as sqlcipher
 from typer import Exit, colors, secho
 
 from sigexport import crypto, models
@@ -14,6 +14,7 @@ from sigexport.logging import log
 def fetch_data(
     source_dir: Path,
     password: Optional[str],
+    key: Optional[str],
     chats: str,
     include_empty: bool,
 ) -> tuple[models.Convos, models.Contacts]:
@@ -21,18 +22,19 @@ def fetch_data(
     db_file = source_dir / "sql" / "db.sqlite"
     signal_config = source_dir / "config.json"
 
-    try:
-        key = crypto.get_key(signal_config, password)
-    except Exception:
-        secho("Failed to decrypt Signal password", fg=colors.RED)
-        raise Exit(1)
+    if key is None:
+        try:
+            key = crypto.get_key(signal_config, password)
+        except Exception:
+            secho("Failed to decrypt Signal password", fg=colors.RED)
+            raise Exit(1)
 
     log(f"Fetching data from {db_file}\n")
     contacts: models.Contacts = {}
     convos: models.Convos = {}
     chats_list = chats.split(",") if len(chats) > 0 else []
 
-    db = dbapi2.connect(str(db_file))
+    db = sqlcipher.connect(str(db_file))  # type: ignore
     c = db.cursor()
     # param binding doesn't work for pragmas, so use a direct string concat
     c.execute(f"PRAGMA KEY = \"x'{key}'\"")

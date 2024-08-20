@@ -31,8 +31,7 @@ python3.pkgs.buildPythonApplication rec {
     beautifulsoup4
     emoji
     markdown
-    # pysqlcipher3
-    sqlcipher3-wheels
+    pysqlcipher3
     pycryptodome
   ];
 
