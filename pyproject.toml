@@ -35,7 +35,7 @@ dependencies = [
     "typer >= 0.12.1",
     "pycryptodome ~= 3.20",
     "pysqlcipher3 ~= 1.2.0",
-    "sqlcipher3-wheels >= 0.5.4",
+    #"sqlcipher3-wheels >= 0.5.4",
 ]
 
 [tool.rye]
